@@ -2,16 +2,14 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Opravář PC</title>
     <style>
-        /* Základní styl pro celé tělo a HTML */
         body, html {
             margin: 0;
             padding: 0;
             overflow: hidden;
             height: 100vh;
-            background-color: #0000AA; /* Klasická modrá barva jako staré Windows */
+            background-color: #0000AA;
             color: #FFFFFF;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
@@ -19,11 +17,10 @@
             justify-content: center;
             align-items: center;
             line-height: 1.5;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /* Lehký zářivý efekt */
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
             -webkit-font-smoothing: antialiased;
         }
-
-        /* Kontejner pro celou hru */
+        /* Hlavní kontejner */
         #game-container {
             display: flex;
             flex-direction: column;
@@ -31,1488 +28,309 @@
             width: 80%;
             height: 80%;
         }
-
-        /* Styl pro konzoli a efekt závad */
-        #console-container {
-            animation: glitch 10s infinite; /* Efekt "glitchování" */
-            display: none; /* Skryto, dokud se hra nespustí */
-            width: 100%;
-            height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            flex-grow: 1;
-            overflow-y: auto;
+        /* Seznam úkolů nahoře */
+        #taskbar-tasks {
+            display: flex;
+            gap: 9px;
+            margin: 8px 0 15px 0;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-
+        .taskbar-task {
+            padding: 4px 18px;
+            border: 2px solid #FFFF00;
+            background: #001B70;
+            color: #FFFF00;
+            border-radius: 6px;
+            font-size: 1.07em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.16s, color 0.13s;
+        }
+        .taskbar-task.active {
+            background: #FFFF00;
+            color: #002288;
+            border-color: #fff;
+        }
+        .taskbar-task.done {
+            background: #008800;
+            color: #fff;
+            border-color: #00ff90;
+        }
+        /* Retro konzole modal */
+        #console-modal {
+            display: none;
+            position: fixed;
+            left: 0; right: 0; top: 0; bottom: 0;
+            background: rgba(0,0,0,0.25);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+        }
+        #console-window {
+            background: #111;
+            border: 3px solid #fff;
+            border-radius: 13px;
+            width: 600px; max-width: 96vw;
+            min-height: 260px;
+            box-shadow: 0 0 50px #000a;
+            color: #00FF00;
+            font-family: 'Courier New', monospace;
+            display: flex; flex-direction: column;
+            animation: glitch 10s infinite;
+        }
+        #console-header {
+            background: #222;
+            color: #fff;
+            padding: 7px 14px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center;
+            user-select: none;
+        }
+        #console-close {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #fff;
+            background: #a00;
+            border-radius: 5px;
+            padding: 0 10px;
+            margin-left: 15px;
+            transition: background 0.14s;
+        }
+        #console-close:hover { background: #e22; }
+        #console-body {
+            background: #111;
+            color: #00FF00;
+            flex: 1;
+            padding: 16px 12px 10px 18px;
+            font-size: 1.15em;
+            border-radius: 0 0 10px 10px;
+        }
         #console {
             white-space: pre-wrap;
-            font-size: 16px;
+            min-height: 56px;
+            font-size: 1.03em;
         }
-
         #input-line {
             display: flex;
             align-items: center;
-            margin-top: 10px;
+            margin-top: 12px;
         }
-
         #prompt {
-            padding-right: 5px;
-            color: #FFFF00; /* Žlutý text pro prompt */
+            padding-right: 7px;
+            color: #FFFF00;
+            font-weight: bold;
         }
-
         #input-field {
             background: none;
             border: none;
-            color: #FFFFFF;
+            color: #00FF00;
             font-family: inherit;
             font-size: 16px;
             outline: none;
-            caret-color: #FFFFFF;
+            caret-color: #FFFF00;
             flex-grow: 1;
         }
-        
-        /* Panel s tlačítky pro herní režim */
-        #button-panel {
-            display: none; /* Skryto na začátku */
-            flex-direction: row;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        /* Styly pro různé herní menu (hlavní, obchod, úkoly) */
-        #main-menu, #shop-menu, #tasks-menu {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 100%;
-            height: 100%;
-            justify-content: center;
-        }
-        
-        .menu-title {
-            font-size: 2.5em;
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
-
-        .menu-section {
-            margin-bottom: 20px;
-        }
-
-        .menu-section h3 {
-            font-size: 1.2em;
-            margin: 0 0 10px 0;
-            text-decoration: underline;
-        }
-
-        /* Styl pro jednotlivé položky v menu a tlačítka */
-        .menu-item {
-            cursor: pointer;
-            padding: 5px 10px;
-            border: 1px solid transparent;
-            margin: 5px;
-            transition: all 0.2s ease-in-out;
-            white-space: nowrap;
-        }
-
-        .menu-item:hover {
-            border-color: #FFFFFF;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .active-item {
-            background-color: rgba(255, 255, 255, 0.3);
-            border-color: #FFFF00;
-            font-weight: bold;
-        }
-
-        /* Animace pro efekt "glitchování" */
-        @keyframes glitch {
-            0% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
-            5% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0 red, -2px -2px 0 cyan; transform: scale(1.01); }
-            10% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); transform: scale(1); }
-            15% { transform: scale(1.01) skewX(2deg); }
-            20% { transform: scale(1) skewX(0); }
-            100% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
-        }
-
-        /* Informační panely v rozích */
-        #language-info {
-            position: absolute;
-            bottom: 30px;
-            right: 10px;
-            color: #888;
-            font-size: 12px;
-            text-align: right;
-        }
-
-        #creator-info {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            color: #888;
-            font-size: 12px;
-            text-align: right;
-        }
-
-        #notification {
+        /* Retro posuvník hlasitosti vlevo dole */
+        #volume-control {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #FFFFFF;
-            color: #0000AA;
-            padding: 15px 25px;
-            border: 2px solid #FFFF00;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            font-size: 1em;
-            font-weight: bold;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        /* Styly pro loading bar */
-        #loading-overlay {
-            display: none;
-            flex-direction: column;
+            left: 22px;
+            bottom: 30px;
+            z-index: 5000;
+            display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
+            background: #222;
+            border: 2px solid #fff;
+            border-radius: 8px;
+            padding: 4px 16px 4px 10px;
+            box-shadow: 0 1px 4px #0094ff77;
+            font-size: 1.15em;
+        }
+        #volume-slider {
+            width: 96px;
+            accent-color: #FFFF00;
+        }
+        .volume-icon {
+            width: 24px;
+            height: 24px;
+            fill: #FFFF00;
+            filter: drop-shadow(0 0 3px #ff0a);
+        }
+        /* Glitch animace */
+        @keyframes glitch {
+            0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+            5% { text-shadow: 0 0 12px #fff, 2px 2px 0 red, -2px -2px 0 cyan; transform: scale(1.01);}
+            10% { text-shadow: 0 0 5px rgba(255,255,255,0.5); transform: scale(1);}
+            15% { transform: scale(1.01) skewX(2deg);}
+            20% { transform: scale(1) skewX(0);}
+            100% { text-shadow: 0 0 5px rgba(255,255,255,0.5);}
+        }
+        /* Info panely v rozích */
+        #language-info, #creator-info {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
+            color: #888;
+            font-size: 12px;
+            text-align: right;
+            right: 10px;
         }
-
-        #loading-text {
-            font-size: 2em;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-        }
-
-        .loading-animation {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #progress-container {
-            width: 80%;
-            background-color: #333;
-            border: 1px solid #fff;
-            margin-top: 20px;
-        }
-
-        #progress-bar {
-            height: 30px;
-            width: 0%;
-            background-color: #4CAF50;
-            text-align: center;
-            line-height: 30px;
-            color: white;
-            transition: width 0.1s;
+        #language-info { bottom: 30px; }
+        #creator-info { bottom: 10px; }
+        /* Responsivita */
+        @media (max-width:700px) {
+            #console-window {width: 97vw;}
         }
     </style>
 </head>
 <body>
-    <audio id="background-music" loop>
-        <source src="https://raw.githubusercontent.com/MinecraftPolicieCz/OPRAVARPC/103d9052c1c72bc121b028695e28d546d789aed4/%5Bno%20copyright%20music%5D%20'In%20Dreamland%20'%20background%20music%20%5BDSWYAclv2I8%5D.mp3" type="audio/mpeg">
-        Váš prohlížeč nepodporuje přehrávání zvuku.
-    </audio>
-
     <div id="game-container">
-        <div id="main-menu">
-            <div class="menu-title">OPRAVÁŘ PC 1.0</div>
-            <div class="menu-section">
-                <h3 id="lang-label-menu">Jazyk</h3>
-                <div id="lang-menu">
-                    <span class="menu-item" data-lang="cs">Čeština</span>
-                    <span class="menu-item" data-lang="en">English</span>
-                    <span class="menu-item" data-lang="de">Deutsch</span>
-                    <span class="menu-item" data-lang="es">Español</span>
-                    <span class="menu-item" data-lang="pl">Polski</span>
-                </div>
-            </div>
-            <div class="menu-section">
-                <h3 id="difficulty-label-menu">Obtížnost</h3>
-                <div id="difficulty-menu">
-                    <span class="menu-item" data-difficulty="easy">Snadná</span>
-                    <span class="menu-item" data-difficulty="medium">Střední</span>
-                    <span class="menu-item" data-difficulty="hard">Těžká</span>
-                </div>
-            </div>
-            <div class="menu-section">
-                <span class="menu-item" id="start-button">ZAHÁJIT HRU</span>
-                <span class="menu-item" id="load-button" style="display: none;">NAČÍST HRU</span>
-            </div>
-        </div>
-
-        <div id="shop-menu" style="display: none;">
-            <h2 id="shop-title" class="menu-title">Obchod</h2>
-            <p id="shop-description"></p>
-            <div id="shop-items-list" class="menu-section"></div>
-            <div class="menu-section">
-                <span class="menu-item" id="exit-shop-button">Odejít z obchodu</span>
-            </div>
-        </div>
-
-        <div id="tasks-menu" style="display: none;">
-            <h2 id="tasks-title" class="menu-title">Seznam úkolů</h2>
-            <div id="main-tasks-section" class="menu-section">
-                <h3>Hlavní úkol</h3>
-                <div id="main-task-list"></div>
-            </div>
-            <div id="side-tasks-section" class="menu-section">
-                <h3>Vedlejší úkoly</h3>
-                <div id="side-tasks-list"></div>
-            </div>
-            <div class="menu-section">
-                <span class="menu-item" id="exit-tasks-button">Zpět na konzoli</span>
-            </div>
-        </div>
-
-        <div id="console-container">
-            <div id="console"></div>
-            <div id="input-line">
-                <span id="prompt">C:\></span>
-                <input type="text" id="input-field" autofocus>
-            </div>
-        </div>
-        
-        <div id="button-panel">
-            <span class="menu-item" id="tasks-button">ÚKOLY</span>
-            <span class="menu-item" id="shop-button">OBCHOD</span>
-            <span class="menu-item" id="save-button">ULOŽIT HRU</span>
-            <span class="menu-item" id="return-to-menu-button">ZPĚT DO MENU</span>
-        </div>
-
-        <div id="loading-overlay">
-            <div id="loading-text">Načítám...</div>
-            <div id="progress-container">
-                <div id="progress-bar"></div>
-            </div>
+        <div style="font-size:2.15em;font-weight:bold;margin-top:1em;">OPRAVÁŘ PC 1.0</div>
+        <div id="taskbar-tasks"></div>
+        <div id="task-desc" style="background:#001040;color:#FFD700;border:2px solid #FFFF00;border-radius:7px;width:80vw;max-width:680px;min-height:55px;margin-bottom:18px;font-size:1.16em;padding:15px 18px 12px 18px;box-shadow:0 0 15px #00d0ff33 inset;">
+            Vyber úkol a spusť plnění!
         </div>
     </div>
-    
-    <div id="notification"></div>
-    
+    <!-- Retro konzole modal -->
+    <div id="console-modal">
+      <div id="console-window">
+        <div id="console-header">
+          <span>Konzole (CMD)</span>
+          <span id="console-close" onclick="closeConsole()">&times;</span>
+        </div>
+        <div id="console-body">
+          <div id="console"></div>
+          <div id="input-line">
+            <span id="prompt">C:\></span>
+            <input type="text" id="input-field" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Retro hlasitost vlevo dole -->
+    <div id="volume-control">
+        <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v2.06c.58.35 1 .98 1 1.74s-.42 1.39-1 1.74v2.06c1.48-.74 2.5-2.26 2.5-4.03z"></path></svg>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" />
+    </div>
     <div id="language-info">
         <span id="lang-label">Jazyk</span>: <span id="current-lang">cs</span><br>
         <span id="change-lang-label">Změnit jazyk: SET_LANG</span> <span id="lang-list">[en|cs|pl|de|es]</span>
     </div>
-    
     <div id="creator-info">
         Vytvořil MinecraftPolicieCz
     </div>
-    
     <script>
-        // Deklarace proměnných pro HTML prvky
-        const consoleDiv = document.getElementById('console');
-        const inputField = document.getElementById('input-field');
-        const promptSpan = document.getElementById('prompt');
-        const gameContainer = document.getElementById('game-container');
-        const consoleContainer = document.getElementById('console-container');
-        const mainMenu = document.getElementById('main-menu');
-        const shopMenu = document.getElementById('shop-menu');
-        const tasksMenu = document.getElementById('tasks-menu');
-        const startButton = document.getElementById('start-button');
-        const loadButton = document.getElementById('load-button');
-        const langMenu = document.getElementById('lang-menu');
-        const difficultyMenu = document.getElementById('difficulty-menu');
-        const shopTitle = document.getElementById('shop-title');
-        const shopDescription = document.getElementById('shop-description');
-        const shopItemsList = document.getElementById('shop-items-list');
-        const exitShopButton = document.getElementById('exit-shop-button');
-        const tasksTitle = document.getElementById('tasks-title');
-        const mainTasksList = document.getElementById('main-task-list');
-        const sideTasksList = document.getElementById('side-tasks-list');
-        const exitTasksButton = document.getElementById('exit-tasks-button');
-        const langLabel = document.getElementById('lang-label');
-        const currentLangSpan = document.getElementById('current-lang');
-        const changeLangLabel = document.getElementById('change-lang-label');
-        const creatorInfoDiv = document.getElementById('creator-info');
-        const buttonPanel = document.getElementById('button-panel');
-        const tasksButton = document.getElementById('tasks-button');
-        const shopButton = document.getElementById('shop-button');
-        const saveButton = document.getElementById('save-button');
-        const returnToMenuButton = document.getElementById('return-to-menu-button');
-        const langMenuLabel = document.getElementById('lang-label-menu');
-        const difficultyMenuLabel = document.getElementById('difficulty-label-menu');
-        const notificationDiv = document.getElementById('notification');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const loadingText = document.getElementById('loading-text');
-        const progressBar = document.getElementById('progress-bar');
-        
-        // Nová proměnná pro hudební element
-        const backgroundMusic = document.getElementById('background-music');
-
-        let taskTimer; // Proměnná pro ukládání časovače úkolů
-        let jobTimer; // Proměnná pro ukládání časovače hlavního úkolu
-
-        // Databáze překladů
-        const translations = {
-            cs: {
-                gameTitle: "OPRAVÁŘ PC 1.0",
-                welcome: "Vítejte v simulátoru opravy PC.\nVaše peníze: ${money}$",
-                startCommand: "ZAHÁJIT HRU",
-                loadCommand: "NAČÍST HRU",
-                saveCommand: "ULOŽIT HRU",
-                returnToMenuCommand: "ZPĚT DO MENU",
-                newJob: "Nový úkol: {name}\n----------------------------------\nPopis problému: {message}",
-                shopWelcome: "Vítejte v obchodě.\nVaše peníze: ${money}$\nProdejte nářadí za 50% původní ceny kliknutím na položku ve vašem inventáři.",
-                shopItem: "{item} ({price}$)",
-                shopInstructions: "Klikněte na položku pro nákup.",
-                buyCommand: "BUY",
-                sellCommand: "SELL",
-                exitShopCommand: "EXIT_SHOP",
-                restarting: "REBOOTING...",
-                restartDone: "Restart dokončen. Zvolte novou akci.",
-                notEnoughMoney: "Nedostatek peněz nebo neplatná položka.",
-                noItemToSell: "Tuto položku nemáte.",
-                invalidTool: "Nemáte potřebný nástroj pro tento úkol. Zkuste si ho koupit v obchodě.",
-                invalidCommand: "Neplatný příkaz. Zkuste jiný nebo použijte tlačítka.",
-                jobDone: "Úkol dokončen! Získáváte {pay}$.\nCelkem peněz: {money}$.\nNyní na úrovni: {level}.\nZvolte další akci.",
-                sold: "Prodáno: {item}. Zůstatek: {money}$.",
-                purchased: "Zakoupeno: {item}. Zůstatek: {money}$.",
-                languageInfoLabel: "Jazyk",
-                changeLangLabel: "Změnit jazyk: SET_LANG",
-                creatorCredit: "Vytvořil MinecraftPolicieCz",
-                difficultyLabels: {
-                    easy: "Snadná",
-                    medium: "Střední",
-                    hard: "Těžká"
-                },
-                problems: {
-                    "VIRUS_INFESTATION": {
-                        name: "VIRUS_INFESTATION",
-                        message: "Systém je infikován virem! Musíte spustit antivirus. Zadejte: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        tool: "antivirus",
-                        loadingTime: 10000,
-                        successRate: 0.85 
-                    },
-                    "BAD_RAM_MODULE": {
-                        name: "BAD_RAM_MODULE",
-                        message: "Počítač hlásí chybu paměti. Použijte nástroj pro diagnostiku. Zadejte: 'TEST_RAM'",
-                        solution: "TEST_RAM",
-                        tool: "ram_tester",
-                        loadingTime: 10000,
-                        successRate: 1.0 
-                    },
-                    "NETWORK_ADAPTER_FAILURE": {
-                        name: "NETWORK_ADAPTER_FAILURE",
-                        message: "Síťový adaptér nefunguje. Zkuste ho resetovat. Zadejte: 'RESET_NETWORK'",
-                        solution: "RESET_NETWORK",
-                        tool: "network_adapter",
-                        loadingTime: 10000,
-                        successRate: 1.0 
-                    },
-                    "CPU_FAILURE": {
-                        name: "CPU_FAILURE",
-                        message: "Procesor nefunguje. Musíte ho vyměnit. Zadejte: 'REPLACE_CPU'",
-                        solution: "REPLACE_CPU",
-                        tool: "cpu",
-                        loadingTime: 10000,
-                        successRate: 1.0 
-                    },
-                    "GPU_FAILURE": {
-                        name: "GPU_FAILURE",
-                        message: "Grafická karta se přehřívá. Musíte ji vyměnit. Zadejte: 'REPLACE_GPU'",
-                        solution: "REPLACE_GPU",
-                        tool: "gpu",
-                        loadingTime: 10000,
-                        successRate: 1.0 
-                    }
-                },
-                sideTasks: {
-                    "DATA_RECOVERY": {
-                        name: "DATA_RECOVERY",
-                        message: "Zákazník smazal důležité soubory. Obnovte je. Zadejte: 'RECOVER_FILES'",
-                        solution: "RECOVER_FILES",
-                        pay: 15,
-                        loadingTime: 10000,
-                        successRate: 1.0 
-                    },
-                    "CLEAN_UP": {
-                        name: "CLEAN_UP",
-                        message: "Vyčistěte dočasné soubory, abyste urychlili systém. Zadejte: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        pay: 10,
-                        successRate: 0.85,
-                        loadingTime: 10000 
-                    }
-                },
-                shopItems: {
-                    'antivirus': 'antivirus',
-                    'ram_tester': 'diagnostika RAM',
-                    'network_adapter': 'síťový adaptér',
-                    'cpu': 'procesor',
-                    'gpu': 'grafická karta',
-                    'ram': 'RAM'
-                },
-                repairMode: "OPRAVNÝ REŽIM: Počítač nelze ovládat klávesnicí. Použijte myš k nákupu, prodeji nebo odchodu z obchodu.",
-                taskInfo: "{name} (Odměna: {pay}$)",
-                noTasks: "Momentálně nejsou k dispozici žádné vedlejší úkoly.",
-                tasksHeader: "Klikněte na úkol pro přijetí:",
-                mainTaskHeader: "Aktivní hlavní úkol",
-                newTasksAvailable: "Přibyly nové úkoly! Klikněte na 'ÚKOLY', abyste si je prohlédli.",
-                acceptCommand: "ACCEPT",
-                tasksCommand: "ÚKOLY",
-                shopCommand: "OBCHOD",
-                gameSaved: "Hra uložena.",
-                gameLoaded: "Hra načtena. Vítejte zpět!",
-                noSavedGame: "Žádná uložená hra nebyla nalezena.",
-                confirmNewGame: "Opravdu chcete začít novou hru? Stávající uložená hra bude přepsána.",
-                loading: "Načítání...",
-                success: "Úkol úspěšně dokončen!",
-                failure: "Úkol selhal. Prosím, zkuste to znovu."
-            },
-            en: {
-                gameTitle: "PC REPAIRMAN 1.0",
-                welcome: "Welcome to the PC repair simulator.\nYour money: ${money}$",
-                startCommand: "START GAME",
-                loadCommand: "LOAD GAME",
-                saveCommand: "SAVE GAME",
-                returnToMenuCommand: "RETURN TO MENU",
-                newJob: "New job: {name}\n----------------------------------\nProblem description: {message}",
-                shopWelcome: "Welcome to the shop.\nYour money: ${money}$\nSell tools for 50% of the original price by clicking on them in your inventory.",
-                shopItem: "{item} ({price}$)",
-                shopInstructions: "Click an item to buy.",
-                buyCommand: "BUY",
-                sellCommand: "SELL",
-                exitShopCommand: "EXIT_SHOP",
-                restarting: "REBOOTING...",
-                restartDone: "Restart complete. Choose a new action.",
-                notEnoughMoney: "Not enough money or invalid item.",
-                noItemToSell: "You don't have this item.",
-                invalidTool: "You don't have the necessary tool for this task. Try to buy it in the shop.",
-                invalidCommand: "Invalid command. Try another one or use the buttons.",
-                jobDone: "Job completed! You earn {pay}$.\nTotal money: {money}$.\nNow on level: {level}.\nChoose another action.",
-                sold: "Sold: {item}. Balance: {money}$.",
-                purchased: "Purchased: {item}. Balance: {money}$.",
-                languageInfoLabel: "Language",
-                changeLangLabel: "Change language: SET_LANG",
-                creatorCredit: "Created by MinecraftPolicieCz",
-                difficultyLabels: {
-                    easy: "Easy",
-                    medium: "Medium",
-                    hard: "Hard"
-                },
-                problems: {
-                    "VIRUS_INFESTATION": {
-                        name: "VIRUS_INFESTATION",
-                        message: "System is infected with a virus! You must run the antivirus. Enter: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        tool: "antivirus",
-                        loadingTime: 10000,
-                        successRate: 0.85
-                    },
-                    "BAD_RAM_MODULE": {
-                        name: "BAD_RAM_MODULE",
-                        message: "The computer reports a memory error. Use a diagnostic tool. Enter: 'TEST_RAM'",
-                        solution: "TEST_RAM",
-                        tool: "ram_tester",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "NETWORK_ADAPTER_FAILURE": {
-                        name: "NETWORK_ADAPTER_FAILURE",
-                        message: "Network adapter is not working. Try to reset it. Enter: 'RESET_NETWORK'",
-                        solution: "RESET_NETWORK",
-                        tool: "network_adapter",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CPU_FAILURE": {
-                        name: "CPU_FAILURE",
-                        message: "The CPU is not working. You must replace it. Enter: 'REPLACE_CPU'",
-                        solution: "REPLACE_CPU",
-                        tool: "cpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "GPU_FAILURE": {
-                        name: "GPU_FAILURE",
-                        message: "The GPU is overheating. You must replace it. Enter: 'REPLACE_GPU'",
-                        solution: "REPLACE_GPU",
-                        tool: "gpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    }
-                },
-                sideTasks: {
-                    "DATA_RECOVERY": {
-                        name: "DATA_RECOVERY",
-                        message: "Customer deleted important files. Recover them. Enter: 'RECOVER_FILES'",
-                        solution: "RECOVER_FILES",
-                        pay: 15,
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CLEAN_UP": {
-                        name: "CLEAN_UP",
-                        message: "Clean up temporary files to speed up the system. Enter: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        pay: 10,
-                        successRate: 0.85,
-                        loadingTime: 10000 
-                    }
-                },
-                shopItems: {
-                    'antivirus': 'antivirus',
-                    'ram_tester': 'RAM tester',
-                    'network_adapter': 'network adapter',
-                    'cpu': 'CPU',
-                    'gpu': 'GPU',
-                    'ram': 'RAM'
-                },
-                repairMode: "REPAIR MODE: The computer cannot be controlled by keyboard. Use the mouse to buy, sell, or exit the shop.",
-                taskInfo: "{name} (Pay: {pay}$)",
-                noTasks: "There are no side tasks available at the moment.",
-                tasksHeader: "Click a task to accept:",
-                mainTaskHeader: "Active main job",
-                newTasksAvailable: "New tasks have arrived! Click 'TASKS' to view them.",
-                acceptCommand: "ACCEPT",
-                tasksCommand: "TASKS",
-                shopCommand: "SHOP",
-                gameSaved: "Game saved.",
-                gameLoaded: "Game loaded. Welcome back!",
-                noSavedGame: "No saved game found.",
-                confirmNewGame: "Do you really want to start a new game? The existing saved game will be overwritten.",
-                loading: "Loading...",
-                success: "Task successfully completed!",
-                failure: "Task failed. Please try again."
-            },
-            pl: {
-                gameTitle: "NAPRAWA PC 1.0",
-                welcome: "Witaj w symulatorze naprawy PC.\nTwoje pieniądze: ${money}$",
-                startCommand: "ROZPOCZNIJ GRĘ",
-                loadCommand: "WCZYTAJ GRĘ",
-                saveCommand: "ZAPISZ GRĘ",
-                returnToMenuCommand: "POWRÓT DO MENU",
-                newJob: "Nowe zadanie: {name}\n----------------------------------\nOpis problemu: {message}",
-                shopWelcome: "Witaj w sklepie.\nTwoje pieniądze: ${money}$\nSprzedaj narzędzia za 50% pierwotnej ceny, klikając na przedmiot w swoim ekwipunku.",
-                shopItem: "{item} ({price}$)",
-                shopInstructions: "Kliknij przedmiot, aby kupić.",
-                buyCommand: "BUY",
-                sellCommand: "SELL",
-                exitShopCommand: "EXIT_SHOP",
-                restarting: "REBOOTING...",
-                restartDone: "Restart zakończony. Wybierz nową akcję.",
-                notEnoughMoney: "Za mało pieniędzy lub nieprawidłowy przedmiot.",
-                noItemToSell: "Nie masz tego przedmiotu.",
-                invalidTool: "Nie masz wymaganego narzędzia do tego zadania. Spróbuj go kupić w sklepie.",
-                invalidCommand: "Nieprawidłowe polecenie. Spróbuj innego lub użyj przycisków.",
-                jobDone: "Zadanie ukończone! Zarabiasz {pay}$.\nCałkowita kwota: {money}$.\nJesteś na poziomie: {level}.\nWybierz kolejną akcję.",
-                sold: "Sprzedano: {item}. Bilans: {money}$.",
-                purchased: "Zakupiono: {item}. Bilans: {money}$.",
-                languageInfoLabel: "Język",
-                changeLangLabel: "Zmień język: SET_LANG",
-                creatorCredit: "Stworzone przez MinecraftPolicieCz",
-                difficultyLabels: {
-                    easy: "Łatwy",
-                    medium: "Średni",
-                    hard: "Trudny"
-                },
-                problems: {
-                    "VIRUS_INFESTATION": {
-                        name: "VIRUS_INFESTATION",
-                        message: "System jest zainfekowany wirusem! Musisz uruchomić program antywirusowy. Wpisz: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        tool: "antivirus",
-                        loadingTime: 10000,
-                        successRate: 0.85
-                    },
-                    "BAD_RAM_MODULE": {
-                        name: "BAD_RAM_MODULE",
-                        message: "Komputer zgłasza błąd pamięci. Użyj narzędzia diagnostycznego. Wpisz: 'TEST_RAM'",
-                        solution: "TEST_RAM",
-                        tool: "ram_tester",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "NETWORK_ADAPTER_FAILURE": {
-                        name: "NETWORK_ADAPTER_FAILURE",
-                        message: "Karta sieciowa nie działa. Spróbuj ją zresetować. Wpisz: 'RESET_NETWORK'",
-                        solution: "RESET_NETWORK",
-                        tool: "network_adapter",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CPU_FAILURE": {
-                        name: "CPU_FAILURE",
-                        message: "Procesor nie działa. Musisz go wymienić. Wpisz: 'REPLACE_CPU'",
-                        solution: "REPLACE_CPU",
-                        tool: "cpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "GPU_FAILURE": {
-                        name: "GPU_FAILURE",
-                        message: "Karta graficzna przegrzewa się. Musisz ją wymienić. Wpisz: 'REPLACE_GPU'",
-                        solution: "REPLACE_GPU",
-                        tool: "gpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    }
-                },
-                sideTasks: {
-                    "DATA_RECOVERY": {
-                        name: "DATA_RECOVERY",
-                        message: "Klient usunął ważne pliky. Odzyskaj je. Wpisz: 'RECOVER_FILES'",
-                        solution: "RECOVER_FILES",
-                        pay: 15,
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CLEAN_UP": {
-                        name: "CLEAN_UP",
-                        message: "Wyczyść tymczasowe pliki, aby przyspieszyć system. Wpisz: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        pay: 10,
-                        successRate: 0.85,
-                        loadingTime: 10000 
-                    }
-                },
-                shopItems: {
-                    'antivirus': 'antywirus',
-                    'ram_tester': 'tester RAM',
-                    'network_adapter': 'karta sieciowa',
-                    'cpu': 'procesor',
-                    'gpu': 'karta graficzna',
-                    'ram': 'RAM'
-                },
-                repairMode: "TRYB NAPRAWY: Komputer nie może być sterowany za pomocą klawiatury. Użyj myszy, aby kupić, sprzedać lub opuścić sklep.",
-                taskInfo: "{name} (Płatność: {pay}$)",
-                noTasks: "W tej chwili nie ma dostępnych zadań pobocznych.",
-                tasksHeader: "Kliknij zadanie, aby je przyjąć:",
-                mainTaskHeader: "Aktywne zadanie główne",
-                newTasksAvailable: "Pojawiły się nowe zadania! Kliknij 'ZADANIA', aby je zobaczyć.",
-                acceptCommand: "ACCEPT",
-                tasksCommand: "ZADANIA",
-                shopCommand: "SKLEP",
-                gameSaved: "Gra zapisana.",
-                gameLoaded: "Gra wczytana. Witaj z powrotem!",
-                noSavedGame: "Nie znaleziono zapisanej gry.",
-                confirmNewGame: "Czy na pewno chcesz rozpocząć nową grę? Zapisana gra zostanie nadpisana.",
-                loading: "Wczytywanie...",
-                success: "Zadanie pomyślnie ukończone!",
-                failure: "Zadanie nie powiodło się. Spróbuj ponownie."
-            },
-            de: {
-                gameTitle: "PC REPARATUR 1.0",
-                welcome: "Willkommen beim PC-Reparatursimulator.\nIhr Geld: ${money}$",
-                startCommand: "SPIEL STARTEN",
-                loadCommand: "SPIEL LADEN",
-                saveCommand: "SPIEL SPEICHERN",
-                returnToMenuCommand: "ZUM MENÜ ZURÜCKKEHREN",
-                newJob: "Neuer Auftrag: {name}\n----------------------------------\nProblembeschreibung: {message}",
-                shopWelcome: "Willkommen im Laden.\nIhr Geld: ${money}$\nVerkaufen Sie Werkzeuge für 50% des ursprünglichen Preises, indem Sie auf den Gegenstand in Ihrem Inventar klicken.",
-                shopItem: "{item} ({price}$)",
-                shopInstructions: "Klicken Sie auf einen Gegenstand, um ihn zu kaufen.",
-                buyCommand: "BUY",
-                sellCommand: "SELL",
-                exitShopCommand: "EXIT_SHOP",
-                restarting: "NEUSTART...",
-                restartDone: "Neustart abgeschlossen. Wählen Sie eine neue Aktion.",
-                notEnoughMoney: "Nicht genug Geld oder ungültiger Gegenstand.",
-                noItemToSell: "Sie haben diesen Gegenstand nicht.",
-                invalidTool: "Sie haben nicht das notwendige Werkzeug für diese Aufgabe. Versuchen Sie es im Laden zu kaufen.",
-                invalidCommand: "Ungültiger Befehl. Versuchen Sie einen anderen oder verwenden Sie die Tasten.",
-                jobDone: "Auftrag abgeschlossen! Sie verdienen {pay}$.\nGesamtgeld: {money}$.\nAktuelles Level: {level}.\nWählen Sie eine weitere Aktion.",
-                sold: "Verkauft: {item}. Kontostand: {money}$.",
-                purchased: "Gekauft: {item}. Kontostand: {money}$.",
-                languageInfoLabel: "Sprache",
-                changeLangLabel: "Sprache ändern: SET_LANG",
-                creatorCredit: "Erstellt von MinecraftPolicieCz",
-                difficultyLabels: {
-                    easy: "Leicht",
-                    medium: "Mittel",
-                    hard: "Schwer"
-                },
-                problems: {
-                    "VIRUS_INFESTATION": {
-                        name: "VIRUS_INFESTATION",
-                        message: "System ist mit einem Virus infiziert! Sie müssen den Virenschutz ausführen. Geben Sie ein: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        tool: "antivirus",
-                        loadingTime: 10000,
-                        successRate: 0.85
-                    },
-                    "BAD_RAM_MODULE": {
-                        name: "BAD_RAM_MODULE",
-                        message: "Der Computer meldet einen Speicherfehler. Verwenden Sie ein Diagnosetool. Geben Sie ein: 'TEST_RAM'",
-                        solution: "TEST_RAM",
-                        tool: "ram_tester",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "NETWORK_ADAPTER_FAILURE": {
-                        name: "NETWORK_ADAPTER_FAILURE",
-                        message: "Netzwerkadapter funktioniert nicht. Versuchen Sie, ihn zurückzusetzen. Geben Sie ein: 'RESET_NETWORK'",
-                        solution: "RESET_NETWORK",
-                        tool: "network_adapter",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CPU_FAILURE": {
-                        name: "CPU_FAILURE",
-                        message: "Der Prozessor funktioniert nicht. Sie müssen ihn ersetzen. Geben Sie ein: 'REPLACE_CPU'",
-                        solution: "REPLACE_CPU",
-                        tool: "cpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "GPU_FAILURE": {
-                        name: "GPU_FAILURE",
-                        message: "Die Grafikkarte überhitzt. Sie müssen sie ersetzen. Geben Sie ein: 'REPLACE_GPU'",
-                        solution: "REPLACE_GPU",
-                        tool: "gpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    }
-                },
-                sideTasks: {
-                    "DATA_RECOVERY": {
-                        name: "DATA_RECOVERY",
-                        message: "Der Kunde hat wichtige Dateien gelöscht. Stellen Sie sie wieder her. Geben Sie ein: 'RECOVER_FILES'",
-                        solution: "RECOVER_FILES",
-                        pay: 15,
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CLEAN_UP": {
-                        name: "CLEAN_UP",
-                        message: "Bereinigen Sie temporäre Dateien, um das System zu beschleunigen. Geben Sie ein: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        pay: 10,
-                        successRate: 0.85,
-                        loadingTime: 10000 
-                    }
-                },
-                shopItems: {
-                    'antivirus': 'Antivirenprogramm',
-                    'ram_tester': 'RAM-Tester',
-                    'network_adapter': 'Netzwerkadapter',
-                    'cpu': 'CPU',
-                    'gpu': 'Grafikkarte',
-                    'ram': 'RAM'
-                },
-                repairMode: "REPARATURMODUS: Der Computer kann nicht mit der Tastatur gesteuert werden. Verwenden Sie die Maus, um einzukaufen, zu verkaufen oder den Laden zu verlassen.",
-                taskInfo: "{name} (Bezahlung: {pay}$)",
-                noTasks: "Im Moment sind keine Nebenaufgaben verfügbar.",
-                tasksHeader: "Klikken Sie auf eine Aufgabe, um sie anzunehmen:",
-                mainTaskHeader: "Aktiver Hauptauftrag",
-                newTasksAvailable: "Es sind neue Aufgaben eingetroffen! Klicken Sie auf 'AUFGABEN', um sie anzusehen.",
-                acceptCommand: "ACCEPT",
-                tasksCommand: "AUFGABEN",
-                shopCommand: "LADEN",
-                gameSaved: "Spiel gespeichert.",
-                gameLoaded: "Spiel geladen. Willkommen zurück!",
-                noSavedGame: "Kein gespeichertes Spiel gefunden.",
-                confirmNewGame: "Möchten Sie wirklich ein neues Spiel starten? Das vorhandene gespeicherte Spiel wird überschrieben.",
-                loading: "Laden...",
-                success: "Aufgabe erfolgreich abgeschlossen!",
-                failure: "Aufgabe fehlgeschlagen. Bitte versuchen Sie es erneut."
-            },
-            es: {
-                gameTitle: "REPARADOR DE PC 1.0",
-                welcome: "Bienvenido al simulador de reparación de PC.\nSu dinero: ${money}$",
-                startCommand: "INICIAR JUEGO",
-                loadCommand: "CARGAR JUEGO",
-                saveCommand: "GUARDAR JUEGO",
-                returnToMenuCommand: "VOLVER AL MENÚ",
-                newJob: "Nuevo trabajo: {name}\n----------------------------------\nDescripción del problema: {message}",
-                shopWelcome: "Bienvenido a la tienda.\nSu dinero: ${money}$\nVenda herramientas por el 50% del precio original haciendo clic en el artículo de su inventario.",
-                shopItem: "{item} ({price}$)",
-                shopInstructions: "Haga clic en un artículo para comprarlo.",
-                buyCommand: "BUY",
-                sellCommand: "SELL",
-                exitShopCommand: "EXIT_SHOP",
-                restarting: "REINICIANDO...",
-                restartDone: "Reinicio completo. Elija una nueva acción.",
-                notEnoughMoney: "No hay suficiente dinero o el artículo no es válido.",
-                noItemToSell: "No tiene este artículo.",
-                invalidTool: "No tiene la herramienta necesaria para esta tarea. Intente comprarla en la tienda.",
-                invalidCommand: "Comando inválido. Intente con otro o use los botones.",
-                jobDone: "¡Trabajo completado! Gana {pay}$.\nDinero total: {money}$.\nAhora en el nivel: {level}.\nElija otra acción.",
-                sold: "Vendido: {item}. Saldo: {money}$.",
-                purchased: "Comprado: {item}. Saldo: {money}$.",
-                languageInfoLabel: "Idioma",
-                changeLangLabel: "Cambiar idioma: SET_LANG",
-                creatorCredit: "Creado por MinecraftPolicieCz",
-                difficultyLabels: {
-                    easy: "Fácil",
-                    medium: "Medio",
-                    hard: "Difícil"
-                },
-                problems: {
-                    "VIRUS_INFESTATION": {
-                        name: "VIRUS_INFESTATION",
-                        message: "¡El sistema está infectado con un virus! Debe ejecutar el antivirus. Ingrese: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        tool: "antivirus",
-                        loadingTime: 10000,
-                        successRate: 0.85
-                    },
-                    "BAD_RAM_MODULE": {
-                        name: "BAD_RAM_MODULE",
-                        message: "La computadora informa un error de memoria. Use una herramienta de diagnóstico. Ingrese: 'TEST_RAM'",
-                        solution: "TEST_RAM",
-                        tool: "ram_tester",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "NETWORK_ADAPTER_FAILURE": {
-                        name: "NETWORK_ADAPTER_FAILURE",
-                        message: "El adaptador de red no funciona. Intente reiniciarlo. Ingrese: 'RESET_NETWORK'",
-                        solution: "RESET_NETWORK",
-                        tool: "network_adapter",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CPU_FAILURE": {
-                        name: "CPU_FAILURE",
-                        message: "El procesador no funciona. Debe reemplazarlo. Ingrese: 'REPLACE_CPU'",
-                        solution: "REPLACE_CPU",
-                        tool: "cpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "GPU_FAILURE": {
-                        name: "GPU_FAILURE",
-                        message: "La tarjeta gráfica se está sobrecalentando. Debe reemplazarla. Ingrese: 'REPLACE_GPU'",
-                        solution: "REPLACE_GPU",
-                        tool: "gpu",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    }
-                },
-                sideTasks: {
-                    "DATA_RECOVERY": {
-                        name: "DATA_RECOVERY",
-                        message: "El cliente eliminó archivos importantes. Recupéralos. Ingrese: 'RECOVER_FILES'",
-                        solution: "RECOVER_FILES",
-                        pay: 15,
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CLEAN_UP": {
-                        name: "CLEAN_UP",
-                        message: "Limpie los archivos temporales para acelerar el sistema. Ingrese: 'SCAN_VIRUS'",
-                        solution: "SCAN_VIRUS",
-                        pay: 10,
-                        successRate: 0.85,
-                        loadingTime: 10000 
-                    }
-                },
-                shopItems: {
-                    'antivirus': 'antivirus',
-                    'ram_tester': 'probador de RAM',
-                    'network_adapter': 'adaptador de red',
-                    'cpu': 'CPU',
-                    'gpu': 'tarjeta gráfica',
-                    'ram': 'RAM'
-                },
-                repairMode: "MODO DE REPARACIÓN: La computadora no se puede controlar con el teclado. Usa el mouse para comprar, vender o salir de la tienda.",
-                taskInfo: "{name} (Pago: {pay}$)",
-                noTasks: "No hay tareas secundarias disponibles en este momento.",
-                tasksHeader: "Haga clic en una tarea para aceptarla:",
-                mainTaskHeader: "Nuevo trabajo principal",
-                newTasksAvailable: "¡Han llegado nuevas tareas! Haga clic en 'TAREAS' para verlas.",
-                acceptCommand: "ACCEPT",
-                tasksCommand: "TAREDA",
-                shopCommand: "TIENDA",
-                gameSaved: "Juego guardado.",
-                gameLoaded: "Juego cargado. Bienvenido de nuevo!",
-                noSavedGame: "No se encontró un juego guardado.",
-                confirmNewGame: "¿Realmente quieres empezar un juego nuevo? El juego guardado actual se sobrescribirá.",
-                loading: "Cargando...",
-                success: "Tarea completada con éxito!",
-                failure: "La tarea falló. Inténtelo de nuevo."
-            }
-        };
-
-        // Nastavení hry podle obtížnosti
-        const difficultySettings = {
-            easy: { startMoney: 200, payBonus: 20 },
-            medium: { startMoney: 100, payBonus: 10 },
-            hard: { startMoney: 50, payBonus: 5 }
-        };
-
-        // Stavové proměnné
-        let currentLang = 'cs';
-        let currentDifficulty = 'medium';
-        let gameState = {};
-        
-        // Seznamy problémů a předmětů
-        const problemList = [
-            "VIRUS_INFESTATION",
-            "BAD_RAM_MODULE",
-            "NETWORK_ADAPTER_FAILURE",
-            "CPU_FAILURE",
-            "GPU_FAILURE"
-        ];
-        
-        const sideTaskList = [
-            "DATA_RECOVERY",
-            "CLEAN_UP"
-        ];
-        
-        const shopItems = {
-            'antivirus': { price: 20 },
-            'ram_tester': { price: 40 },
-            'network_adapter': { price: 50 },
-            'cpu': { price: 100 },
-            'gpu': { price: 200 },
-            'ram': { price: 75 }
-        };
-
-        // Funkce pro získání překladu
-        function getTranslation(key, params = {}) {
-            let message = translations[currentLang][key];
-            if (typeof message === 'object') {
-                return message;
-            }
-            for (const param in params) {
-                message = message.replace(`{${param}}`, params[param]);
-            }
-            return message;
+    // Ukázkové úkoly
+    const tasks = [
+        {
+            id: "VIRUS",
+            title: "Odstranit virus",
+            desc: "Systém je infikován virem! Spusť příkaz <b>SCAN_VIRUS</b>.",
+            command: "SCAN_VIRUS",
+            state: "active"
+        },
+        {
+            id: "RAM",
+            title: "Diagnostika RAM",
+            desc: "Počítač hlásí chybu paměti. Použij příkaz <b>TEST_RAM</b>.",
+            command: "TEST_RAM",
+            state: "waiting"
+        },
+        {
+            id: "RECOVERY",
+            title: "Obnovit smazaná data",
+            desc: "Obnov smazané soubory pomocí příkazu <b>RECOVER_FILES</b>.",
+            command: "RECOVER_FILES",
+            state: "waiting"
         }
+    ];
+    let activeTaskIndex = 0;
+    let commandBuffer = "";
 
-        // Funkce pro nastavení jazyka
-        function setLanguage(lang) {
-            currentLang = lang;
-            updateMenu();
-            updateLanguageInfoPanel();
-            updateButtonPanelText();
-        }
-
-        // Funkce pro nastavení obtížnosti
-        function setDifficulty(difficulty) {
-            currentDifficulty = difficulty;
-            updateMenu();
-        }
-
-        // Aktualizace textu v hlavním menu
-        function updateMenu() {
-            document.querySelectorAll('#lang-menu .menu-item').forEach(el => {
-                el.classList.remove('active-item');
-                if (el.dataset.lang === currentLang) {
-                    el.classList.add('active-item');
-                }
-            });
-
-            document.querySelectorAll('#difficulty-menu .menu-item').forEach(el => {
-                el.classList.remove('active-item');
-                if (el.dataset.difficulty === currentDifficulty) {
-                    el.classList.add('active-item');
-                }
-                el.textContent = getTranslation('difficultyLabels')[el.dataset.difficulty];
-            });
-
-            document.querySelector('.menu-title').textContent = getTranslation('gameTitle');
-            document.querySelector('#lang-label-menu').textContent = getTranslation('languageInfoLabel');
-            document.querySelector('#difficulty-label-menu').textContent = getTranslation('difficultyLabels')[currentDifficulty];
-            startButton.textContent = getTranslation('startCommand');
-            loadButton.textContent = getTranslation('loadCommand');
-        }
-
-        // Aktualizace textu v informačním panelu
-        function updateLanguageInfoPanel() {
-            currentLangSpan.textContent = currentLang;
-            langLabel.textContent = getTranslation('languageInfoLabel');
-            changeLangLabel.textContent = getTranslation('changeLangLabel');
-            creatorInfoDiv.textContent = getTranslation('creatorCredit');
-        }
-        
-        // Aktualizace textu na tlačítkách
-        function updateButtonPanelText() {
-            tasksButton.textContent = getTranslation('tasksCommand');
-            shopButton.textContent = getTranslation('shopCommand');
-            saveButton.textContent = getTranslation('saveCommand');
-            returnToMenuButton.textContent = getTranslation('returnToMenuCommand');
-        }
-
-        // Spuštění hry
-        function startGame() {
-            mainMenu.style.display = 'none';
-            consoleContainer.style.display = 'flex';
-            buttonPanel.style.display = 'flex';
-            
-            gameState = {
-                money: difficultySettings[currentDifficulty].startMoney,
-                currentProblem: null,
-                availableTasks: [],
-                inventory: {
-                    'antivirus': 0,
-                    'ram_tester': 0,
-                    'network_adapter': 0,
-                    'cpu': 0,
-                    'gpu': 0,
-                    'ram': 0
-                },
-                level: 1
-            };
-            printToConsole(getTranslation('welcome', { money: gameState.money }));
-            startTaskTimer();
-            startMainJobTimer();
-            updateButtonPanelText();
-            inputField.focus(); 
-            startJob(); // Nový řádek: Okamžitě začne nový úkol
-            playMusic();
-        }
-
-        // Načtení hry
-        function loadGame() {
-            const savedState = localStorage.getItem('opravarec_pc_save');
-            if (savedState) {
-                gameState = JSON.parse(savedState);
-                mainMenu.style.display = 'none';
-                consoleContainer.style.display = 'flex';
-                buttonPanel.style.display = 'flex';
-                printToConsole(getTranslation('gameLoaded'));
-                startTaskTimer();
-                startMainJobTimer();
-                updateButtonPanelText();
-                inputField.focus();
-                playMusic();
-            } else {
-                alert(getTranslation('noSavedGame'));
-            }
-        }
-        
-        // Uložení hry
-        function saveGame() {
-            localStorage.setItem('opravarec_pc_save', JSON.stringify(gameState));
-            printToConsole(getTranslation('gameSaved'));
-        }
-
-        // Návrat na hlavní menu
-        function returnToMainMenu() {
-            if (taskTimer) clearTimeout(taskTimer);
-            if (jobTimer) clearTimeout(jobTimer);
-            consoleContainer.style.display = 'none';
-            buttonPanel.style.display = 'none';
-            shopMenu.style.display = 'none';
-            tasksMenu.style.display = 'none';
-            mainMenu.style.display = 'flex';
-            checkSavedGame();
-        }
-
-        // Návrat na konzoli
-        function returnToConsole() {
-            shopMenu.style.display = 'none';
-            tasksMenu.style.display = 'none';
-            consoleContainer.style.display = 'flex';
-            inputField.focus();
-            inputField.style.display = 'block';
-            promptSpan.style.display = 'block';
-            buttonPanel.style.display = 'flex';
-            if (gameState.currentProblem) {
-                printToConsole(getTranslation('newJob', {
-                    name: gameState.currentProblem.name,
-                    message: gameState.currentProblem.message
-                }));
-            } else {
-                printToConsole(getTranslation('restartDone'));
-            }
-        }
-        
-        // Zobrazí notifikaci v pravém horním rohu
-        function showNotification() {
-            notificationDiv.textContent = getTranslation('newTasksAvailable');
-            notificationDiv.style.display = 'block';
-            setTimeout(() => {
-                notificationDiv.style.opacity = 1;
-            }, 10);
-            setTimeout(() => {
-                notificationDiv.style.opacity = 0;
-            }, 5000); // Skryje notifikaci po 5 vteřinách
-            setTimeout(() => {
-                notificationDiv.style.display = 'none';
-            }, 5500);
-        }
-
-        // Spuštění časovače pro vedlejší úkoly
-        function startTaskTimer() {
-            const randomTime = Math.floor(Math.random() * (45000 - 15000 + 1)) + 15000;
-            taskTimer = setTimeout(() => {
-                generateNewTask();
-                showNotification();
-                startTaskTimer(); // Znovu zavolá časovač pro nekonečnou smyčku
-            }, randomTime);
-        }
-        
-        // Spuštění časovače pro hlavní úkoly
-        function startMainJobTimer() {
-            if (jobTimer) clearTimeout(jobTimer);
-            jobTimer = setTimeout(() => {
-                if (!gameState.currentProblem) {
-                    startJob();
-                }
-                startMainJobTimer();
-            }, 60000); // každá 1 minuta
-        }
-
-        // Generování nového vedlejšího úkolu
-        function generateNewTask() {
-            const MAX_SIDE_TASKS = 5;
-            if (gameState.availableTasks.length >= MAX_SIDE_TASKS) {
-                return;
-            }
-            const randomTaskKey = sideTaskList[Math.floor(Math.random() * sideTaskList.length)];
-            const taskData = translations[currentLang].sideTasks[randomTaskKey];
-            gameState.availableTasks.push({
-                name: randomTaskKey,
-                message: taskData.message,
-                solution: taskData.solution,
-                pay: taskData.pay,
-                isSideTask: true,
-                successRate: taskData.successRate,
-                loadingTime: taskData.loadingTime
-            });
-        }
-
-        // Vykreslení textu na konzoli
-        function printToConsole(text) {
-            consoleDiv.textContent = text;
-        }
-
-        // Zahájení nového hlavního úkolu
-        function startJob() {
-            const randomProblemKey = problemList[Math.floor(Math.random() * problemList.length)];
-            const problemData = translations[currentLang].problems[randomProblemKey];
-            
-            gameState.currentProblem = {
-                name: randomProblemKey,
-                message: problemData.message,
-                solution: problemData.solution,
-                tool: problemData.tool,
-                pay: (50 + gameState.level * difficultySettings[currentDifficulty].payBonus),
-                isSideTask: false,
-                loadingTime: problemData.loadingTime,
-                successRate: problemData.successRate
-            };
-            printToConsole(getTranslation('newJob', {
-                name: gameState.currentProblem.name,
-                message: gameState.currentProblem.message
-            }));
-            
-            returnToConsole();
-        }
-
-        // Dokončení úkolu
-        function finishJob() {
-            // Vymaže text z konzole před zobrazením výsledku
-            consoleDiv.textContent = ''; 
-            
-            const pay = gameState.currentProblem.pay;
-            gameState.money += pay;
-            gameState.level++;
-
-            if (gameState.currentProblem.isSideTask) {
-                const taskIndex = gameState.availableTasks.findIndex(t => t.solution === gameState.currentProblem.solution);
-                if (taskIndex !== -1) {
-                    gameState.availableTasks.splice(taskIndex, 1);
-                }
-            }
-            
-            if (gameState.currentProblem.tool && gameState.inventory[gameState.currentProblem.tool] > 0) {
-                gameState.inventory[gameState.currentProblem.tool]--;
-            }
-
-            printToConsole(getTranslation('jobDone', { pay, money: gameState.money, level: gameState.level }));
-            gameState.currentProblem = null;
-            
-            if (jobTimer) {
-                clearTimeout(jobTimer);
-            }
-            startMainJobTimer();
-
-            returnToConsole();
-        }
-
-        // Zpracování vstupu z konzole
-        function handleInput(input) {
-            const normalizedInput = input.trim().toUpperCase();
-            const currentProblem = gameState.currentProblem;
-            
-            if (normalizedInput === getTranslation('tasksCommand').toUpperCase()) {
-                showTasksMenu();
-                return;
-            }
-            
-            if (normalizedInput === getTranslation('shopCommand').toUpperCase()) {
-                showShopMenu();
-                return;
-            }
-            
-            if (normalizedInput === getTranslation('saveCommand').toUpperCase()) {
-                saveGame();
-                return;
-            }
-
-            if (normalizedInput === getTranslation('returnToMenuCommand').toUpperCase()) {
-                returnToMainMenu();
-                return;
-            }
-
-            if (currentProblem) {
-                if (currentProblem.solution === normalizedInput) {
-                    if (currentProblem.tool && gameState.inventory[currentProblem.tool] <= 0) {
-                        printToConsole(getTranslation('invalidTool'));
-                        return;
-                    }
-                    startLoading(currentProblem.loadingTime, currentProblem.successRate, finishJob);
-                } else {
-                    printToConsole(getTranslation('invalidCommand'));
-                }
-            } else {
-                printToConsole(getTranslation('invalidCommand'));
-            }
-        }
-        
-        // Zobrazení nabídky úkolů
-        function showTasksMenu() {
-            consoleContainer.style.display = 'none';
-            shopMenu.style.display = 'none';
-            tasksMenu.style.display = 'flex';
-            updateTasksMenu();
-        }
-        
-        // Aktualizace nabídky úkolů
-        function updateTasksMenu() {
-            tasksTitle.textContent = getTranslation('tasksCommand');
-            exitTasksButton.textContent = getTranslation('exitTasksButton');
-            mainTasksList.innerHTML = '';
-            sideTasksList.innerHTML = '';
-            
-            if (gameState.currentProblem) {
-                mainTasksList.innerHTML = `
-                    <div class="menu-item">
-                        <strong>${getTranslation('mainTaskHeader')}:</strong> ${getTranslation('taskInfo', { name: gameState.currentProblem.name, pay: gameState.currentProblem.pay })}
-                    </div>
-                `;
-            } else {
-                mainTasksList.innerHTML = `<p>${getTranslation('noTasks')}</p>`;
-            }
-
-            if (gameState.availableTasks.length > 0) {
-                const taskHeader = document.createElement('p');
-                taskHeader.textContent = getTranslation('tasksHeader');
-                sideTasksList.appendChild(taskHeader);
-                
-                gameState.availableTasks.forEach(task => {
-                    const taskItem = document.createElement('div');
-                    taskItem.classList.add('menu-item');
-                    taskItem.textContent = getTranslation('taskInfo', { name: task.name, pay: task.pay });
-                    taskItem.onclick = () => acceptSideTask(task);
-                    sideTasksList.appendChild(taskItem);
-                });
-            } else {
-                sideTasksList.innerHTML = `<p>${getTranslation('noTasks')}</p>`;
-            }
-        }
-
-        // Přijetí vedlejšího úkolu
-        function acceptSideTask(task) {
-            if (gameState.currentProblem) {
-                alert(getTranslation('mainTaskHeader') + ' ' + getTranslation('taskInfo', { name: gameState.currentProblem.name, pay: gameState.currentProblem.pay }));
-                return;
-            }
-            
-            gameState.currentProblem = task;
-            returnToConsole();
-        }
-
-        // Zobrazení obchodu
-        function showShopMenu() {
-            consoleContainer.style.display = 'none';
-            tasksMenu.style.display = 'none';
-            shopMenu.style.display = 'flex';
-            updateShopMenu();
-        }
-
-        // Aktualizace nabídky obchodu
-        function updateShopMenu() {
-            shopTitle.textContent = getTranslation('shopCommand');
-            shopDescription.textContent = getTranslation('shopWelcome', { money: gameState.money });
-            shopItemsList.innerHTML = '';
-
-            const buySection = document.createElement('div');
-            buySection.classList.add('menu-section');
-            buySection.innerHTML = `<h3>${getTranslation('buyCommand')}</h3><p>${getTranslation('shopInstructions')}</p>`;
-            const buyList = document.createElement('div');
-            buyList.style.display = 'flex';
-            buyList.style.flexWrap = 'wrap';
-            buySection.appendChild(buyList);
-            
-            for (const item in shopItems) {
-                const itemDiv = document.createElement('div');
-                itemDiv.classList.add('menu-item');
-                itemDiv.textContent = getTranslation('shopItem', { item: getTranslation('shopItems')[item], price: shopItems[item].price });
-                itemDiv.onclick = () => buyItem(item);
-                buyList.appendChild(itemDiv);
-            }
-            shopItemsList.appendChild(buySection);
-
-            const sellSection = document.createElement('div');
-            sellSection.classList.add('menu-section');
-            sellSection.innerHTML = `<h3>${getTranslation('sellCommand')}</h3><p>${getTranslation('shopInstructions')}</p>`;
-            const sellList = document.createElement('div');
-            sellList.style.display = 'flex';
-            sellList.style.flexWrap = 'wrap';
-            sellSection.appendChild(sellList);
-            
-            for (const item in gameState.inventory) {
-                if (gameState.inventory[item] > 0) {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.classList.add('menu-item');
-                    itemDiv.textContent = `${getTranslation('shopItems')[item]} (x${gameState.inventory[item]})`;
-                    itemDiv.onclick = () => sellItem(item);
-                    sellList.appendChild(itemDiv);
-                }
-            }
-            shopItemsList.appendChild(sellSection);
-
-            exitShopButton.textContent = getTranslation('exitShopCommand');
-        }
-
-        // Nákup položky
-        function buyItem(item) {
-            const itemPrice = shopItems[item].price;
-            if (gameState.money >= itemPrice) {
-                gameState.money -= itemPrice;
-                gameState.inventory[item]++;
-                updateShopMenu();
-            } else {
-                alert(getTranslation('notEnoughMoney'));
-            }
-        }
-
-        // Prodej položky
-        function sellItem(item) {
-            if (gameState.inventory[item] > 0) {
-                const sellPrice = Math.floor(shopItems[item].price / 2);
-                gameState.money += sellPrice;
-                gameState.inventory[item]--;
-                updateShopMenu();
-            } else {
-                alert(getTranslation('noItemToSell'));
-            }
-        }
-
-        // Funkce pro načítací obrazovku
-        function startLoading(time, successRate, callback) {
-            // Vyčistí text konzole před začátkem načítání
-            consoleDiv.textContent = ''; 
-            
-            consoleContainer.style.display = 'none';
-            buttonPanel.style.display = 'none';
-            loadingOverlay.style.display = 'flex';
-            loadingText.textContent = getTranslation('loading');
-            progressBar.style.width = '0%';
-            
-            let progress = 0;
-            const interval = 100;
-            const step = (interval / time) * 100;
-            const loadingInterval = setInterval(() => {
-                progress += step;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(loadingInterval);
-                    
-                    const success = Math.random() <= successRate;
-                    loadingText.textContent = success ? getTranslation('success') : getTranslation('failure');
-
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                        if (success) {
-                            callback();
-                        } else {
-                            gameState.currentProblem = null;
-                            returnToConsole();
-                        }
-                    }, 500); 
-                }
-                progressBar.style.width = progress + '%';
-            }, interval);
-        }
-
-        // Přehrávání hudby
-        function playMusic() {
-            backgroundMusic.play().catch(error => {
-                console.error("Přehrávání hudby selhalo:", error);
-            });
-        }
-        
-        // Zkontrolovat existenci uložené hry
-        function checkSavedGame() {
-            if (localStorage.getItem('opravarec_pc_save')) {
-                loadButton.style.display = 'block';
-            } else {
-                loadButton.style.display = 'none';
-            }
-        }
-
-        // Event listenery
-        inputField.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                handleInput(inputField.value);
-                inputField.value = '';
-            }
+    // Vykresli taskbar
+    function renderTaskbarTasks() {
+        const bar = document.getElementById('taskbar-tasks');
+        bar.innerHTML = "";
+        tasks.forEach((task, idx) => {
+            const d = document.createElement('div');
+            d.className = "taskbar-task" +
+                (idx === activeTaskIndex ? " active" : "") +
+                (task.state === "done" ? " done" : "");
+            d.textContent = task.title + (task.state === "done" ? " ✓" : "");
+            d.onclick = ()=>{ switchToTask(idx); };
+            bar.appendChild(d);
         });
+    }
+    // Detail a popis úkolu + spuštění konzole
+    function renderTaskDetails() {
+        const task = tasks[activeTaskIndex];
+        document.getElementById('task-desc').innerHTML = task.desc +
+            "<br><b>Stav:</b> " + (task.state === "done" ? "Splněno" : (task.state === "active" ? "Probíhá" : "Čeká na zahájení"));
+        // Otevři konzoli pokud úkol je právě aktivní
+        if (task.state === "active") openConsole();
+        else closeConsole();
+    }
+    function switchToTask(idx) {
+        activeTaskIndex = idx;
+        // Pouze jeden úkol může být aktivní
+        tasks.forEach((t,i)=>t.state = (i === idx && t.state!=="done") ? "active" : (t.state==="done"?"done":"waiting"));
+        commandBuffer = "";
+        renderTaskbarTasks();
+        renderTaskDetails();
+        document.getElementById('console').textContent = "";
+        document.getElementById('input-field').value = "";
+    }
 
-        // Event listenery pro menu
-        langMenu.addEventListener('click', (event) => {
-            if (event.target.classList.contains('menu-item')) {
-                setLanguage(event.target.dataset.lang);
-            }
-        });
+    // Konzole: otevřít/zavřít
+    function openConsole() {
+        document.getElementById('console-modal').style.display = 'flex';
+        setTimeout(()=>{document.getElementById('input-field').focus();},80);
+    }
+    function closeConsole() {
+        document.getElementById('console-modal').style.display = 'none';
+    }
 
-        difficultyMenu.addEventListener('click', (event) => {
-            if (event.target.classList.contains('menu-item')) {
-                setDifficulty(event.target.dataset.difficulty);
-            }
-        });
-
-        startButton.addEventListener('click', () => {
-            if (localStorage.getItem('opravarec_pc_save')) {
-                if (confirm(getTranslation('confirmNewGame'))) {
-                    startGame();
-                }
+    // Zpracování příkazů v konzoli
+    document.getElementById('input-field').addEventListener('keydown', function(e){
+        if (e.key === "Enter") {
+            const val = this.value.trim();
+            if (!val) return;
+            commandBuffer += "\nC:\\> " + val;
+            const task = tasks[activeTaskIndex];
+            if (val.toUpperCase() === task.command) {
+                commandBuffer += "\nOK: Úkol splněn!";
+                task.state = "done";
+                setTimeout(()=>{
+                    renderTaskbarTasks();
+                    renderTaskDetails();
+                }, 600);
             } else {
-                startGame();
+                commandBuffer += "\nChybný příkaz! Zkus to znovu.";
             }
-        });
+            document.getElementById('console').textContent = commandBuffer.trim();
+            this.value = "";
+        }
+    });
 
-        loadButton.addEventListener('click', loadGame);
-        tasksButton.addEventListener('click', showTasksMenu);
-        shopButton.addEventListener('click', showShopMenu);
-        saveButton.addEventListener('click', saveGame);
-        returnToMenuButton.addEventListener('click', returnToMainMenu);
+    // Hlasitost globální proměnná
+    window.audioVolume = 1;
+    document.getElementById('volume-slider').addEventListener('input', function(){
+        window.audioVolume = parseFloat(this.value);
+        // Až bude hudba: music.volume = window.audioVolume;
+    });
 
-        exitShopButton.addEventListener('click', returnToConsole);
-        exitTasksButton.addEventListener('click', returnToConsole);
-        
-        // Inicializace
-        updateMenu();
-        updateLanguageInfoPanel();
-        checkSavedGame();
+    // INIT
+    function init() {
+        // První úkol aktivní, ostatní čekají
+        tasks.forEach((t,i)=>t.state = (i===0 ? "active" : "waiting"));
+        activeTaskIndex = 0;
+        commandBuffer = "";
+        document.getElementById('console').textContent = "";
+        document.getElementById('input-field').value = "";
+        renderTaskbarTasks();
+        renderTaskDetails();
+    }
+    window.onload = init;
     </script>
 </body>
 </html>
