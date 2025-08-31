@@ -1,422 +1,311 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opravář PC 1.0 - Real Desktop</title>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #0b1a40;
-            overflow: hidden;
-        }
-
-        /* Real desktop wallpaper */
-        #desktop-bg {
-            position: fixed;
-            left: 0; top: 0; width: 100vw; height: 100vh;
-            background: url('https://wallpapercave.com/wp/wp2757874.jpg') center/cover no-repeat, #224488;
-            z-index: 0;
-        }
-
-        /* Taskbar */
-        #taskbar {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: 42px;
-            background: linear-gradient(90deg, #222a44 70%, #3454aa 100%);
-            box-shadow: 0 -2px 8px #000a;
-            display: flex;
-            align-items: center;
-            z-index: 100;
-            color: #fff;
-        }
-        #start-menu-btn {
-            width: 80px;
-            height: 36px;
-            margin: 2px 10px 2px 6px;
-            background: #2976d8;
-            border-radius: 7px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            border: 1.5px solid #fff4;
-            box-shadow: 0 1px 2px #0007;
-            user-select: none;
-        }
-        #taskbar-tasks {
-            flex: 1;
-            display: flex;
-            gap: 10px;
-        }
-        .taskbar-task {
-            background: #28457a;
-            border-radius: 5px;
-            margin: 0 4px;
-            padding: 5px 14px;
-            cursor: pointer;
-            transition: background 0.15s;
-            border: 1.5px solid transparent;
-        }
-        .taskbar-task.active {
-            background: #ffd700;
-            color: #222;
-            border-color: #fff;
-            font-weight: bold;
-        }
-        #taskbar-clock {
-            margin-right: 24px;
-            min-width: 60px;
-            font-variant-numeric: tabular-nums;
-            text-align: center;
-            font-size: 1.1em;
-            letter-spacing: 1px;
-        }
-
-        /* Volume control */
-        #volume-control {
-            position: fixed;
-            left: 14px;
-            bottom: 54px;
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #222a44ee;
-            border-radius: 8px;
-            padding: 4px 10px 4px 8px;
-            box-shadow: 0 2px 8px #0007;
-        }
-        #volume-slider {
-            width: 90px;
-        }
-        .volume-icon {
-            width: 26px;
-            height: 26px;
-        }
-
-        /* Window (task/console) */
-        .window {
-            position: absolute;
-            top: 70px; left: 110px; width: 470px;
-            background: #f8fafd;
-            border: 2.2px solid #5c8cd9;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px #000a;
-            z-index: 1001;
-            display: none;
-            flex-direction: column;
-            min-height: 320px;
-            max-height: 70vh;
-        }
-        .window-header {
-            background: linear-gradient(90deg, #2976d8, #6faaf9 100%);
-            color: #fff;
-            padding: 12px;
-            border-radius: 10px 10px 0 0;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            user-select: none;
-        }
-        .window-header .window-title {
-            font-size: 1.18em;
-        }
-        .window-header .window-close {
-            font-size: 1.6em;
-            font-weight: normal;
-            cursor: pointer;
-            padding: 0 8px;
-            border-radius: 5px;
-            transition: background 0.12s;
-        }
-        .window-header .window-close:hover {
-            background: #fff4;
-        }
-        .window-body {
-            padding: 18px 16px;
-            flex: 1;
-            overflow-y: auto;
-            font-size: 1.08em;
-        }
-        .window-footer {
-            padding: 12px 16px;
-            background: #f4f6fa;
-            border-radius: 0 0 10px 10px;
-            text-align: right;
-        }
-        .window-footer button {
-            margin-left: 12px;
-            padding: 6px 16px;
-            border: none;
-            border-radius: 4px;
-            background: #2976d8;
-            color: #fff;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .window-footer button:hover {
-            background: #1957a6;
-        }
-
-        /* Task list for switching */
-        .task-list {
-            margin: 0 0 10px 0;
-            padding: 0;
-            list-style: none;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .task-list li {
-            background: #eaf0fa;
-            color: #223;
-            border-radius: 5px;
-            border: 1px solid #bdd2ef;
-            padding: 3px 11px;
-            cursor: pointer;
-            font-size: 0.98em;
-            transition: background 0.15s, color 0.15s;
-        }
-        .task-list li.active {
-            background: #2976d8;
-            color: #fff;
-            border-color: #2976d8;
-            font-weight: bold;
-        }
-        .task-list li.done {
-            background: #bce4bc;
-            color: #226e22;
-            border-color: #99cc99;
-        }
-
-        /* Console (visible jen když plníš úkol) */
-        #console-container {
-            margin-top: 18px;
-            background: #222;
-            color: #e1e1e1;
-            border-radius: 8px;
-            padding: 12px 10px 10px 10px;
-            font-family: 'Fira Mono', 'Consolas', monospace;
-            font-size: 1.06em;
-            box-shadow: 0 2px 10px #0004;
-            display: none;
-        }
-        #console {
-            white-space: pre-wrap;
-            min-height: 48px;
-        }
-        #input-line {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-        }
-        #prompt {
-            color: #ffd700;
-            padding-right: 8px;
-            font-weight: bold;
-        }
-        #input-field {
-            background: none;
-            border: none;
-            color: #fff;
-            font-family: inherit;
-            font-size: 1.07em;
-            outline: none;
-            caret-color: #fff;
-            padding: 1px 4px;
-            flex: 1;
-        }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 9px; background: #eaf0fa; }
-        ::-webkit-scrollbar-thumb { background: #bdd2ef; border-radius: 5px; }
-        ::selection { background: #cce6ff; }
-
-        /* Responsivita */
-        @media (max-width: 650px) {
-            .window { left: 3vw; width: 94vw; min-width: unset; }
-            #volume-control { left: 3vw; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Opravář PC 1.0</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Courier New', Courier, monospace;
+      background: #001c5a;
+      color: #00ffea;
+      overflow: hidden;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .header {
+      background: #002f91;
+      padding: 16px 0 12px 0;
+      text-align: center;
+      font-size: 1.85em;
+      font-weight: bold;
+      text-shadow: 0 0 7px #00bfff, 0 0 18px #fff;
+      border-bottom: 2.5px solid #00ffff99;
+      letter-spacing: 1px;
+      user-select: none;
+    }
+    .tasks-row {
+      background: #002a6f;
+      padding: 8px 0;
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      border-bottom: 2px solid #00bfff33;
+      min-height: 42px;
+    }
+    .task-btn {
+      padding: 5px 22px;
+      border: 2px solid #0055b3;
+      background: #001c5a;
+      color: #00ffea;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1em;
+      margin-right: 3px;
+      box-shadow: 0 0 8px #00bfff33 inset;
+      transition: 0.13s;
+    }
+    .task-btn.active {
+      background: #00bfff;
+      color: #002349;
+      border-color: #00ffff;
+      font-weight: bold;
+      text-shadow: 0 0 6px #fff;
+    }
+    .task-btn.done {
+      color: #66ff99;
+      border-color: #00c97b;
+      background: #003c1c;
+      font-weight: bold;
+    }
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 30px;
+    }
+    .task-desc {
+      background: #001040;
+      color: #9ffcff;
+      border: 2px solid #0055b3;
+      border-radius: 7px;
+      width: 80vw;
+      max-width: 680px;
+      min-height: 70px;
+      margin-bottom: 18px;
+      font-size: 1.19em;
+      padding: 18px 18px 12px 18px;
+      box-shadow: 0 0 15px #00d0ff33 inset;
+      letter-spacing: 0.5px;
+    }
+    .task-status {
+      color: #ffd900;
+      font-size: 1em;
+      font-weight: bold;
+      margin-bottom: 4px;
+      margin-left: 4px;
+      text-shadow: 0 0 8px #fff6,0 0 2px #00bfff;
+    }
+    .console-outer {
+      width: 80vw;
+      max-width: 680px;
+      background: #000a2e;
+      margin: 0 auto 0 auto;
+      border-radius: 6px;
+      box-shadow: 0 2px 12px #00bfff55;
+      border: 2.5px solid #00bfff;
+      margin-bottom: 20px;
+      margin-top: 13px;
+      display: none;
+      flex-direction: column;
+      animation: flicker 1s infinite alternate;
+    }
+    @keyframes flicker {
+      from { box-shadow: 0 2px 12px #00bfff55,0 0 5px #00c0ff33 inset;}
+      to   { box-shadow: 0 2px 20px #00eaff99,0 0 17px #00c0ff33 inset;}
+    }
+    .console-inner {
+      padding: 18px 13px 10px 13px;
+      min-height: 60px;
+      font-size: 1.08em;
+      white-space: pre-wrap;
+      outline: none;
+      color: #00ffea;
+      font-family: 'Fira Mono', 'Consolas', 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      margin-top: 7px;
+    }
+    .prompt {
+      color: #ffe800;
+      font-weight: bold;
+      margin-right: 9px;
+      font-size: 1.04em;
+      letter-spacing: 1px;
+    }
+    .console-input {
+      background: none;
+      border: none;
+      color: #00ffea;
+      font-family: inherit;
+      font-size: 1.07em;
+      outline: none;
+      caret-color: #ffd900;
+      flex: 1;
+    }
+    .footer {
+      background: #002a6f;
+      border-top: 2px solid #00bfff33;
+      min-height: 36px;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 1em;
+      color: #5efcff;
+      letter-spacing: 2px;
+      padding-right: 22px;
+      padding-top: 2px;
+      user-select: none;
+    }
+    /* Retro styl posuvníku hlasitosti */
+    #volume-control {
+      position: fixed;
+      left: 20px;
+      bottom: 29px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #002a6f;
+      border: 2px solid #00bfff;
+      border-radius: 8px;
+      padding: 5px 16px 5px 10px;
+      box-shadow: 0 1px 4px #0094ff77;
+      font-size: 1.15em;
+    }
+    #volume-slider {
+      width: 96px;
+      accent-color: #00ffea;
+    }
+    .volume-icon {
+      width: 25px;
+      height: 25px;
+      fill: #00ffea;
+      filter: drop-shadow(0 0 3px #00f8ff99);
+    }
+    @media (max-width:700px) {
+      .task-desc, .console-outer {width: 96vw;max-width: unset;}
+    }
+  </style>
 </head>
 <body>
-    <div id="desktop-bg"></div>
-    <div id="taskbar">
-        <div id="start-menu-btn">Start</div>
-        <div id="taskbar-tasks"></div>
-        <div id="taskbar-clock"></div>
+  <div class="header">OPRAVÁŘ PC 1.0</div>
+  <div class="tasks-row" id="tasks-row"></div>
+  <div class="main-area">
+    <div class="task-status" id="task-status"></div>
+    <div class="task-desc" id="task-desc"></div>
+    <div class="console-outer" id="console-outer">
+      <div class="console-inner" id="console"></div>
+      <div class="input-row">
+        <span class="prompt">C:\&gt;</span>
+        <input class="console-input" id="input-field" autocomplete="off" spellcheck="false"/>
+      </div>
     </div>
-    <div id="volume-control">
-        <svg class="volume-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v2.06c.58.35 1 .98 1 1.74s-.42 1.39-1 1.74v2.06c1.48-.74 2.5-2.26 2.5-4.03z"></path></svg>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" />
-    </div>
-    <div id="task-window" class="window">
-        <div class="window-header">
-            <span class="window-title" id="window-title">Úkol</span>
-            <span class="window-close" onclick="closeTaskWindow()">×</span>
-        </div>
-        <div class="window-body">
-            <ul class="task-list" id="task-list"></ul>
-            <div id="task-details"></div>
-            <div id="console-container">
-                <div id="console"></div>
-                <div id="input-line">
-                    <span id="prompt">C:\></span>
-                    <input type="text" id="input-field" autocomplete="off">
-                </div>
-            </div>
-        </div>
-        <div class="window-footer">
-            <button onclick="switchTaskPrompt()">Přepnout úkol</button>
-        </div>
-    </div>
-    <script>
-        // --- DEMO DATA ---
+  </div>
+  <div class="footer">www.minecraftpolicie.cz</div>
+  <div id="volume-control">
+    <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v2.06c.58.35 1 .98 1 1.74s-.42 1.39-1 1.74v2.06c1.48-.74 2.5-2.26 2.5-4.03z"></path></svg>
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" />
+  </div>
+  <script>
+    // DEMO ÚKOLY
+    const tasks = [
+      {
+        id: "VIRUS",
+        title: "Odstranit virus",
+        desc: "Systém je infikován virem! Spusť příkaz <b>SCAN_VIRUS</b>.",
+        command: "SCAN_VIRUS",
+        state: "active",
+      },
+      {
+        id: "RAM",
+        title: "Diagnostika RAM",
+        desc: "Počítač hlásí chybu paměti. Použij příkaz <b>TEST_RAM</b>.",
+        command: "TEST_RAM",
+        state: "waiting",
+      },
+      {
+        id: "RECOVERY",
+        title: "Obnovit smazaná data",
+        desc: "Obnov smazané soubory pomocí příkazu <b>RECOVER_FILES</b>.",
+        command: "RECOVER_FILES",
+        state: "waiting",
+      }
+    ];
+    let activeTaskIndex = 0;
+    let commandBuffer = "";
 
-        const tasks = [
-            {
-                id: "VIRUS_INFESTATION",
-                title: "Odstranit virus",
-                desc: "Systém je infikován virem! Spusťte antivirus.",
-                command: "SCAN_VIRUS",
-                state: "active", // other: waiting, done
-                showConsole: true
-            },
-            {
-                id: "BAD_RAM_MODULE",
-                title: "Diagnostika RAM",
-                desc: "Počítač hlásí chybu paměti. Použijte nástroj pro diagnostiku.",
-                command: "TEST_RAM",
-                state: "waiting",
-                showConsole: true
-            },
-            {
-                id: "DATA_RECOVERY",
-                title: "Obnovit smazaná data",
-                desc: "Zákazník omylem smazal důležité soubory. Obnovte je.",
-                command: "RECOVER_FILES",
-                state: "waiting",
-                showConsole: true
-            }
-        ];
-        let activeTaskIndex = 0;
+    function renderTasksRow() {
+      const row = document.getElementById('tasks-row');
+      row.innerHTML = "";
+      tasks.forEach((task, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "task-btn" + (idx === activeTaskIndex ? " active" : "") + (task.state === "done" ? " done" : "");
+        btn.textContent = task.title + (task.state === "done" ? " ✓" : "");
+        btn.onclick = () => { switchToTask(idx); };
+        row.appendChild(btn);
+      });
+    }
+    function renderTaskDetails() {
+      const task = tasks[activeTaskIndex];
+      document.getElementById('task-desc').innerHTML = task.desc;
+      document.getElementById('task-status').textContent =
+        (task.state === "active" ? "Probíhá" : task.state === "done" ? "Splněno" : "Čeká na zahájení");
+      // Konzole jen pokud aktivní úkol a není hotov
+      document.getElementById('console-outer').style.display = (task.state === "active") ? "flex" : "none";
+      if (task.state !== "active") {
+        commandBuffer = "";
+        document.getElementById('console').textContent = "";
+        document.getElementById('input-field').value = "";
+      }
+    }
+    function switchToTask(idx) {
+      activeTaskIndex = idx;
+      renderTasksRow();
+      renderTaskDetails();
+    }
 
-        // --- VZHLED DESKTOPU, TASKBAR, ČAS ---
-        function updateClock() {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('taskbar-clock').textContent = `${hh}:${mm}`;
+    // Konzole
+    document.getElementById('input-field').addEventListener('keydown', function(e){
+      if (e.key === "Enter") {
+        const val = this.value.trim();
+        if (!val) return;
+        commandBuffer += "\nC:\\> " + val;
+        const task = tasks[activeTaskIndex];
+        if (val.toUpperCase() === task.command) {
+          commandBuffer += "\nOK: Úkol splněn!";
+          task.state = "done";
+          setTimeout(()=>{
+            renderTasksRow();
+            renderTaskDetails();
+          }, 600);
+        } else {
+          commandBuffer += "\nChybný příkaz! Zkus to znovu.";
         }
-        setInterval(updateClock, 1000); updateClock();
+        document.getElementById('console').textContent = commandBuffer.trim();
+        this.value = "";
+      }
+    });
 
-        // --- TASKBAR ÚKOLY ---
-        function renderTaskbarTasks() {
-            const bar = document.getElementById('taskbar-tasks');
-            bar.innerHTML = "";
-            tasks.forEach((task, idx) => {
-                const d = document.createElement('div');
-                d.className = "taskbar-task" + (idx === activeTaskIndex ? " active" : "");
-                d.textContent = task.title + (task.state==="done" ? " ✓" : "");
-                d.onclick = ()=>{ openTaskWindow(idx); };
-                bar.appendChild(d);
-            });
-        }
+    // Hlasitost
+    window.audioVolume = 1;
+    document.getElementById('volume-slider').addEventListener('input', function(){
+      window.audioVolume = parseFloat(this.value);
+      // Až budeš mít hudbu: music.volume = window.audioVolume;
+    });
 
-        // --- OKNO ÚKOLU ---
-        function openTaskWindow(idx) {
-            activeTaskIndex = idx;
-            renderTaskWindow();
-            document.getElementById('task-window').style.display = "flex";
-        }
-        function closeTaskWindow() {
-            document.getElementById('task-window').style.display = "none";
-        }
-        function renderTaskWindow() {
-            const task = tasks[activeTaskIndex];
-            document.getElementById('window-title').textContent = "Úkol: " + task.title;
-            // Task list pro přepínání
-            const ul = document.getElementById('task-list');
-            ul.innerHTML = "";
-            tasks.forEach((tk, i) => {
-                const li = document.createElement('li');
-                li.textContent = tk.title + (tk.state==="done" ? " ✓" : "");
-                li.className = (i === activeTaskIndex ? "active " : "") + (tk.state==="done" ? "done" : "");
-                li.onclick = ()=>{ activeTaskIndex=i; renderTaskWindow(); };
-                ul.appendChild(li);
-            });
-            // Detail úkolu
-            document.getElementById('task-details').innerHTML = `
-                <b>Popis:</b> ${task.desc}<br>
-                <b>Stav:</b> ${task.state==="done" ? "Splněno" : (task.state==="active" ? "Aktivní" : "Čeká")}
-            `;
-            // Konzole jen když plníš úkol (state active)
-            const showConsole = task.state==="active" && task.showConsole;
-            document.getElementById('console-container').style.display = showConsole ? "block" : "none";
-        }
-        function switchTaskPrompt() {
-            // Najdi první "waiting" úkol, přepni na něj
-            const next = tasks.findIndex((t,i) => t.state==="waiting" && i!==activeTaskIndex);
-            if (next !== -1) {
-                tasks[activeTaskIndex].state = "waiting";
-                tasks[next].state = "active";
-                activeTaskIndex = next;
-                renderTaskWindow();
-                renderTaskbarTasks();
-            } else {
-                alert("Žádný další čekající úkol.");
-            }
-        }
-
-        // --- KONZOLE ÚKOLU ---
-        let commandBuffer = "";
-        document.getElementById('input-field').addEventListener('keydown', function(e){
-            if (e.key === "Enter") {
-                const val = this.value.trim();
-                commandBuffer += "\nC:\\> " + val;
-                const task = tasks[activeTaskIndex];
-                if (val.toUpperCase() === task.command) {
-                    commandBuffer += "\nOK: Úkol splněn!";
-                    task.state = "done";
-                    renderTaskbarTasks();
-                    setTimeout(()=>{renderTaskWindow();}, 500);
-                } else {
-                    commandBuffer += "\nChybný příkaz! Zkus to znovu.";
-                }
-                document.getElementById('console').textContent = commandBuffer;
-                this.value = "";
-            }
-        });
-
-        // --- VOLUME (jen demo, v reálné aplikaci nastavíš volume zvuku) ---
-        document.getElementById('volume-slider').addEventListener('input', function(){
-            // Pokud máš nějaký zvuk, zde nastavíš např. audio.volume = this.value;
-            // Demo: konzolový výpis
-            // console.log('Nastavená hlasitost:', this.value);
-        });
-
-        // --- START MENU ---
-        document.getElementById('start-menu-btn').onclick = function(){
-            openTaskWindow(activeTaskIndex);
-        };
-
-        // --- INIT ---
-        function init() {
-            // Jeden úkol aktivní, ostatní čekají
-            tasks.forEach((t,i)=>t.state = (i===0 ? "active" : "waiting"));
-            commandBuffer = "";
-            document.getElementById('console').textContent = "";
-            document.getElementById('input-field').value = "";
-            renderTaskbarTasks();
-            renderTaskWindow();
-        }
-        init();
-    </script>
+    // INIT
+    function init() {
+      // První úkol aktivní, ostatní čekají
+      tasks.forEach((t,i)=>t.state = (i===0 ? "active" : "waiting"));
+      activeTaskIndex = 0;
+      commandBuffer = "";
+      document.getElementById('console').textContent = "";
+      document.getElementById('input-field').value = "";
+      renderTasksRow();
+      renderTaskDetails();
+    }
+    window.onload = init;
+  </script>
 </body>
 </html>
