@@ -20,37 +20,62 @@
             text-shadow: 0 0 5px rgba(255,255,255,0.5);
             -webkit-font-smoothing: antialiased;
         }
-        #top-bar {
-            width: 100vw;
+        #game-container {
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 12px;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+            height: 80%;
         }
-        .top-bar-btn {
-            font-size: 1.05em;
-            font-family: inherit;
+        #main-title {
+            font-size:2.15em;
+            font-weight:bold;
+            margin-top:1em;
+            text-shadow: 0 0 9px #fff6;
+            letter-spacing:1.5px;
+        }
+        /* Taskbary */
+        #taskbar-main, #taskbar-side {
+            display: flex;
+            gap: 9px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 7px;
+        }
+        .taskbar-label {
+            color: #FFFF00;
+            font-weight: bold;
+            margin-right: 6px;
+            font-size: 1.02em;
+            text-shadow: 0 0 6px #FFD700;
+        }
+        .taskbar-task {
+            padding: 4px 18px;
+            border: 2px solid #FFFF00;
             background: #001B70;
             color: #FFFF00;
-            border: 2px solid #FFFF00;
             border-radius: 6px;
-            padding: 5px 18px;
-            cursor: pointer;
+            font-size: 1.07em;
             font-weight: bold;
-            margin-bottom: 4px;
-            transition: background 0.13s, color 0.13s;
+            cursor: pointer;
+            transition: background 0.16s, color 0.13s;
         }
-        .top-bar-btn.active, .top-bar-btn:active {
+        .taskbar-task.done {
+            background: #008800;
+            color: #fff;
+            border-color: #00ff90;
+            cursor: default;
+        }
+        .taskbar-task:hover:not(.done) {
             background: #FFFF00;
             color: #002288;
         }
-        .top-bar-btn:focus { outline: 2px solid #fff; }
-
+        /* Pracovní stůl */
         #workbench-section {
             width: 80vw;
             max-width: 800px;
             min-height: 320px;
-            margin-top: 20px;
+            margin-top: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -70,49 +95,6 @@
             color: #FFD700;
             font-size: 1.13em;
             position: relative;
-        }
-        #workbench-title {
-            font-size: 2em;
-            font-weight: bold;
-            margin-top: 2em;
-            letter-spacing: 1.5px;
-            text-shadow: 0 0 9px #fff6;
-        }
-        /* Taskbary */
-        #taskbar-main, #taskbar-side {
-            display: flex;
-            gap: 9px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 7px;
-        }
-        .taskbar-label {
-            color: #FFFF00;
-            font-weight: bold;
-            margin-right: 6px;
-            font-size: 1.02em;
-            text-shadow: 0 0 6px #FFD700;
-        }
-        .taskbar-task {
-            padding: 4px 16px;
-            border: 2px solid #FFFF00;
-            background: #001B70;
-            color: #FFFF00;
-            border-radius: 6px;
-            font-size: 1.02em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.16s, color 0.13s;
-        }
-        .taskbar-task.done {
-            background: #008800;
-            color: #fff;
-            border-color: #00ff90;
-            cursor:default;
-        }
-        .taskbar-task:hover:not(.done) {
-            background: #FFFF00;
-            color: #002288;
         }
         /* Retro konzole modal */
         #console-modal {
@@ -240,16 +222,15 @@
     </style>
 </head>
 <body>
-    <div id="top-bar">
-        <button class="top-bar-btn active" id="btn-workbench" onclick="showWorkbench()">Pracovní stůl</button>
-    </div>
-    <div id="workbench-section">
-        <div id="workbench-title">OPRAVÁŘ PC 1.0</div>
+    <div id="game-container">
+        <div id="main-title">OPRAVÁŘ PC 1.0</div>
         <div id="taskbar-main"></div>
         <div id="taskbar-side"></div>
-        <div id="workbench-pc">
-            <span style="font-size:1.2em;">Zde se budou opravovat počítače.</span>
-            <span style="display:block;font-size:0.92em;color:#FFD70099;margin-top:10px;">Klikni na úkol pro opravu!</span>
+        <div id="workbench-section">
+            <div id="workbench-pc">
+                <span style="font-size:1.2em;">Zde se budou opravovat počítače.</span>
+                <span style="display:block;font-size:0.92em;color:#FFD70099;margin-top:10px;">Klikni na úkol pro opravu!</span>
+            </div>
         </div>
     </div>
     <!-- Retro konzole modal -->
@@ -300,7 +281,6 @@
     let currentConsoleTask = null; // objekt úkolu, který se právě řeší v konzoli
     let consoleBuffer = "";
 
-    // Pomocné funkce pro generování úkolů
     function addRandomMainTask() {
         if (mainTasks.length >= 3) return;
         // Vyber náhodný dosud neaktivní hlavní úkol
@@ -318,7 +298,6 @@
         sideTasks.push({ ...t, type:"side", state:"waiting" });
         renderTaskbars();
     }
-    // Náhodné generování s časováním
     function mainTaskTimer() {
         addRandomMainTask();
         setTimeout(mainTaskTimer, 45000 + Math.random()*75000);
@@ -328,7 +307,6 @@
         setTimeout(sideTaskTimer, 10000 + Math.random()*20000);
     }
 
-    // Vykreslení taskbarů
     function renderTaskbars() {
         // Hlavní úkoly
         const mainbar = document.getElementById('taskbar-main');
@@ -354,7 +332,6 @@
         });
     }
 
-    // Otevření konzole pro řešení úkolu
     function openConsoleForTask(task, type, idx) {
         currentConsoleTask = { ...task, type, idx };
         consoleBuffer = "";
@@ -371,7 +348,6 @@
         consoleBuffer = "";
     }
 
-    // Zpracování příkazů v konzoli
     document.getElementById('input-field').addEventListener('keydown', function(e){
         if (e.key === "Enter" && currentConsoleTask) {
             const val = this.value.trim();
@@ -393,31 +369,21 @@
         }
     });
 
-    // Hlasitost globální proměnná
     window.audioVolume = 1;
     document.getElementById('volume-slider').addEventListener('input', function(){
         window.audioVolume = parseFloat(this.value);
     });
 
-    // První inicializace
     function init() {
-        // Na začátku jeden hlavní a jeden vedlejší úkol
         mainTasks = [];
         sideTasks = [];
         addRandomMainTask();
         addRandomSideTask();
         renderTaskbars();
-        // Spusť časovače na generování úkolů
         setTimeout(mainTaskTimer, 1500);
         setTimeout(sideTaskTimer, 3000);
     }
     window.onload = init;
-
-    // Workbench je vždy aktivní (pouze jeden režim)
-    function showWorkbench() {
-        document.getElementById('workbench-section').style.display = '';
-        document.getElementById('btn-workbench').classList.add('active');
-    }
     </script>
 </body>
 </html>
