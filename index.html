@@ -20,42 +20,99 @@
             text-shadow: 0 0 5px rgba(255,255,255,0.5);
             -webkit-font-smoothing: antialiased;
         }
-        /* Hlavní kontejner */
-        #game-container {
+        #top-bar {
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .top-bar-btn {
+            font-size: 1.05em;
+            font-family: inherit;
+            background: #001B70;
+            color: #FFFF00;
+            border: 2px solid #FFFF00;
+            border-radius: 6px;
+            padding: 5px 18px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 4px;
+            transition: background 0.13s, color 0.13s;
+        }
+        .top-bar-btn.active, .top-bar-btn:active {
+            background: #FFFF00;
+            color: #002288;
+        }
+        .top-bar-btn:focus { outline: 2px solid #fff; }
+
+        #workbench-section {
+            width: 80vw;
+            max-width: 800px;
+            min-height: 320px;
+            margin-top: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 80%;
-            height: 80%;
         }
-        /* Seznam úkolů nahoře */
-        #taskbar-tasks {
+        #workbench-pc {
+            background: #001850;
+            border: 3px solid #FFFF00;
+            border-radius: 12px;
+            width: 390px;
+            height: 180px;
+            margin-top: 32px;
+            box-shadow: 0 0 23px #000a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #FFD700;
+            font-size: 1.13em;
+            position: relative;
+        }
+        #workbench-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 2em;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 9px #fff6;
+        }
+        /* Taskbary */
+        #taskbar-main, #taskbar-side {
             display: flex;
             gap: 9px;
-            margin: 8px 0 15px 0;
             justify-content: center;
             flex-wrap: wrap;
+            margin-bottom: 7px;
+        }
+        .taskbar-label {
+            color: #FFFF00;
+            font-weight: bold;
+            margin-right: 6px;
+            font-size: 1.02em;
+            text-shadow: 0 0 6px #FFD700;
         }
         .taskbar-task {
-            padding: 4px 18px;
+            padding: 4px 16px;
             border: 2px solid #FFFF00;
             background: #001B70;
             color: #FFFF00;
             border-radius: 6px;
-            font-size: 1.07em;
+            font-size: 1.02em;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.16s, color 0.13s;
-        }
-        .taskbar-task.active {
-            background: #FFFF00;
-            color: #002288;
-            border-color: #fff;
         }
         .taskbar-task.done {
             background: #008800;
             color: #fff;
             border-color: #00ff90;
+            cursor:default;
+        }
+        .taskbar-task:hover:not(.done) {
+            background: #FFFF00;
+            color: #002288;
         }
         /* Retro konzole modal */
         #console-modal {
@@ -132,7 +189,7 @@
             caret-color: #FFFF00;
             flex-grow: 1;
         }
-        /* Retro posuvník hlasitosti vlevo dole */
+        /* Retro hlasitost vlevo dole */
         #volume-control {
             position: fixed;
             left: 22px;
@@ -177,18 +234,22 @@
         }
         #language-info { bottom: 30px; }
         #creator-info { bottom: 10px; }
-        /* Responsivita */
         @media (max-width:700px) {
             #console-window {width: 97vw;}
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div style="font-size:2.15em;font-weight:bold;margin-top:1em;">OPRAVÁŘ PC 1.0</div>
-        <div id="taskbar-tasks"></div>
-        <div id="task-desc" style="background:#001040;color:#FFD700;border:2px solid #FFFF00;border-radius:7px;width:80vw;max-width:680px;min-height:55px;margin-bottom:18px;font-size:1.16em;padding:15px 18px 12px 18px;box-shadow:0 0 15px #00d0ff33 inset;">
-            Vyber úkol a spusť plnění!
+    <div id="top-bar">
+        <button class="top-bar-btn active" id="btn-workbench" onclick="showWorkbench()">Pracovní stůl</button>
+    </div>
+    <div id="workbench-section">
+        <div id="workbench-title">OPRAVÁŘ PC 1.0</div>
+        <div id="taskbar-main"></div>
+        <div id="taskbar-side"></div>
+        <div id="workbench-pc">
+            <span style="font-size:1.2em;">Zde se budou opravovat počítače.</span>
+            <span style="display:block;font-size:0.92em;color:#FFD70099;margin-top:10px;">Klikni na úkol pro opravu!</span>
         </div>
     </div>
     <!-- Retro konzole modal -->
@@ -220,94 +281,114 @@
         Vytvořil MinecraftPolicieCz
     </div>
     <script>
-    // Ukázkové úkoly
-    const tasks = [
-        {
-            id: "VIRUS",
-            title: "Odstranit virus",
-            desc: "Systém je infikován virem! Spusť příkaz <b>SCAN_VIRUS</b>.",
-            command: "SCAN_VIRUS",
-            state: "active"
-        },
-        {
-            id: "RAM",
-            title: "Diagnostika RAM",
-            desc: "Počítač hlásí chybu paměti. Použij příkaz <b>TEST_RAM</b>.",
-            command: "TEST_RAM",
-            state: "waiting"
-        },
-        {
-            id: "RECOVERY",
-            title: "Obnovit smazaná data",
-            desc: "Obnov smazané soubory pomocí příkazu <b>RECOVER_FILES</b>.",
-            command: "RECOVER_FILES",
-            state: "waiting"
-        }
+    // Vzory úkolů
+    const MAIN_TASKS_LIBRARY = [
+        { title: "Odstranit virus", desc: "Systém je infikován virem! Spusť příkaz <b>SCAN_VIRUS</b>.", command: "SCAN_VIRUS" },
+        { title: "Diagnostika RAM", desc: "Počítač hlásí chybu paměti. Použij příkaz <b>TEST_RAM</b>.", command: "TEST_RAM" },
+        { title: "Výměna procesoru", desc: "CPU je vadný, použij příkaz <b>REPLACE_CPU</b>.", command: "REPLACE_CPU" },
+        { title: "Obnova systému", desc: "Obnov systém pomocí příkazu <b>RESTORE_SYSTEM</b>.", command: "RESTORE_SYSTEM" }
     ];
-    let activeTaskIndex = 0;
-    let commandBuffer = "";
+    const SIDE_TASKS_LIBRARY = [
+        { title: "Obnovit smazaná data", desc: "Obnov smazané soubory pomocí příkazu <b>RECOVER_FILES</b>.", command: "RECOVER_FILES" },
+        { title: "Vyčistit disk", desc: "Proveď úklid pomocí příkazu <b>CLEAN_DISK</b>.", command: "CLEAN_DISK" },
+        { title: "Zrychlit systém", desc: "Použij příkaz <b>OPTIMIZE</b> k optimalizaci.", command: "OPTIMIZE" },
+        { title: "Aktualizovat ovladače", desc: "Spusť <b>UPDATE_DRIVERS</b> pro aktualizaci.", command: "UPDATE_DRIVERS" }
+    ];
+    // Aktuální úkoly
+    let mainTasks = [];
+    let sideTasks = [];
+    let currentConsoleTask = null; // objekt úkolu, který se právě řeší v konzoli
+    let consoleBuffer = "";
 
-    // Vykresli taskbar
-    function renderTaskbarTasks() {
-        const bar = document.getElementById('taskbar-tasks');
-        bar.innerHTML = "";
-        tasks.forEach((task, idx) => {
-            const d = document.createElement('div');
-            d.className = "taskbar-task" +
-                (idx === activeTaskIndex ? " active" : "") +
-                (task.state === "done" ? " done" : "");
-            d.textContent = task.title + (task.state === "done" ? " ✓" : "");
-            d.onclick = ()=>{ switchToTask(idx); };
-            bar.appendChild(d);
+    // Pomocné funkce pro generování úkolů
+    function addRandomMainTask() {
+        if (mainTasks.length >= 3) return;
+        // Vyber náhodný dosud neaktivní hlavní úkol
+        let candidates = MAIN_TASKS_LIBRARY.filter(t => !mainTasks.some(a=>a.command===t.command));
+        if (candidates.length === 0) return;
+        let t = candidates[Math.floor(Math.random()*candidates.length)];
+        mainTasks.push({ ...t, type:"main", state:"waiting" });
+        renderTaskbars();
+    }
+    function addRandomSideTask() {
+        if (sideTasks.length >= 5) return;
+        let candidates = SIDE_TASKS_LIBRARY.filter(t => !sideTasks.some(a=>a.command===t.command));
+        if (candidates.length === 0) return;
+        let t = candidates[Math.floor(Math.random()*candidates.length)];
+        sideTasks.push({ ...t, type:"side", state:"waiting" });
+        renderTaskbars();
+    }
+    // Náhodné generování s časováním
+    function mainTaskTimer() {
+        addRandomMainTask();
+        setTimeout(mainTaskTimer, 45000 + Math.random()*75000);
+    }
+    function sideTaskTimer() {
+        addRandomSideTask();
+        setTimeout(sideTaskTimer, 10000 + Math.random()*20000);
+    }
+
+    // Vykreslení taskbarů
+    function renderTaskbars() {
+        // Hlavní úkoly
+        const mainbar = document.getElementById('taskbar-main');
+        mainbar.innerHTML = '<span class="taskbar-label">Hlavní úkoly:</span>';
+        if (mainTasks.length === 0) mainbar.innerHTML += "<span style='color:#FFD70099'>Žádné úkoly</span>";
+        mainTasks.forEach((task, idx) => {
+            let el = document.createElement('span');
+            el.className = "taskbar-task" + (task.state==="done"?" done":"");
+            el.innerHTML = task.title + (task.state==="done" ? " ✓" : "");
+            if(task.state!=="done") el.onclick = ()=>openConsoleForTask(task, "main", idx);
+            mainbar.appendChild(el);
+        });
+        // Vedlejší úkoly
+        const sidebar = document.getElementById('taskbar-side');
+        sidebar.innerHTML = '<span class="taskbar-label">Vedlejší úkoly:</span>';
+        if (sideTasks.length === 0) sidebar.innerHTML += "<span style='color:#FFD70099'>Žádné úkoly</span>";
+        sideTasks.forEach((task, idx) => {
+            let el = document.createElement('span');
+            el.className = "taskbar-task" + (task.state==="done"?" done":"");
+            el.innerHTML = task.title + (task.state==="done" ? " ✓" : "");
+            if(task.state!=="done") el.onclick = ()=>openConsoleForTask(task, "side", idx);
+            sidebar.appendChild(el);
         });
     }
-    // Detail a popis úkolu + spuštění konzole
-    function renderTaskDetails() {
-        const task = tasks[activeTaskIndex];
-        document.getElementById('task-desc').innerHTML = task.desc +
-            "<br><b>Stav:</b> " + (task.state === "done" ? "Splněno" : (task.state === "active" ? "Probíhá" : "Čeká na zahájení"));
-        // Otevři konzoli pokud úkol je právě aktivní
-        if (task.state === "active") openConsole();
-        else closeConsole();
-    }
-    function switchToTask(idx) {
-        activeTaskIndex = idx;
-        // Pouze jeden úkol může být aktivní
-        tasks.forEach((t,i)=>t.state = (i === idx && t.state!=="done") ? "active" : (t.state==="done"?"done":"waiting"));
-        commandBuffer = "";
-        renderTaskbarTasks();
-        renderTaskDetails();
+
+    // Otevření konzole pro řešení úkolu
+    function openConsoleForTask(task, type, idx) {
+        currentConsoleTask = { ...task, type, idx };
+        consoleBuffer = "";
         document.getElementById('console').textContent = "";
         document.getElementById('input-field').value = "";
-    }
-
-    // Konzole: otevřít/zavřít
-    function openConsole() {
         document.getElementById('console-modal').style.display = 'flex';
-        setTimeout(()=>{document.getElementById('input-field').focus();},80);
+        setTimeout(()=>{document.getElementById('input-field').focus();},100);
+        // Popis úkolu pod nadpisem
+        document.getElementById('console').innerHTML = `<span style="color:#FFD700">${task.desc.replace(/<[^>]+>/g,"")}</span>\n`;
     }
     function closeConsole() {
         document.getElementById('console-modal').style.display = 'none';
+        currentConsoleTask = null;
+        consoleBuffer = "";
     }
 
     // Zpracování příkazů v konzoli
     document.getElementById('input-field').addEventListener('keydown', function(e){
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && currentConsoleTask) {
             const val = this.value.trim();
             if (!val) return;
-            commandBuffer += "\nC:\\> " + val;
-            const task = tasks[activeTaskIndex];
-            if (val.toUpperCase() === task.command) {
-                commandBuffer += "\nOK: Úkol splněn!";
-                task.state = "done";
+            consoleBuffer += "\nC:\\> " + val;
+            if (val.toUpperCase() === currentConsoleTask.command) {
+                consoleBuffer += "\nOK: Úkol splněn!";
+                if(currentConsoleTask.type==="main") mainTasks[currentConsoleTask.idx].state = "done";
+                else sideTasks[currentConsoleTask.idx].state = "done";
                 setTimeout(()=>{
-                    renderTaskbarTasks();
-                    renderTaskDetails();
-                }, 600);
+                    closeConsole();
+                    renderTaskbars();
+                }, 700);
             } else {
-                commandBuffer += "\nChybný příkaz! Zkus to znovu.";
+                consoleBuffer += "\nChybný příkaz! Zkus to znovu.";
             }
-            document.getElementById('console').textContent = commandBuffer.trim();
+            document.getElementById('console').textContent = document.getElementById('console').textContent.replace(/\n*$/,"") + consoleBuffer;
             this.value = "";
         }
     });
@@ -316,21 +397,27 @@
     window.audioVolume = 1;
     document.getElementById('volume-slider').addEventListener('input', function(){
         window.audioVolume = parseFloat(this.value);
-        // Až bude hudba: music.volume = window.audioVolume;
     });
 
-    // INIT
+    // První inicializace
     function init() {
-        // První úkol aktivní, ostatní čekají
-        tasks.forEach((t,i)=>t.state = (i===0 ? "active" : "waiting"));
-        activeTaskIndex = 0;
-        commandBuffer = "";
-        document.getElementById('console').textContent = "";
-        document.getElementById('input-field').value = "";
-        renderTaskbarTasks();
-        renderTaskDetails();
+        // Na začátku jeden hlavní a jeden vedlejší úkol
+        mainTasks = [];
+        sideTasks = [];
+        addRandomMainTask();
+        addRandomSideTask();
+        renderTaskbars();
+        // Spusť časovače na generování úkolů
+        setTimeout(mainTaskTimer, 1500);
+        setTimeout(sideTaskTimer, 3000);
     }
     window.onload = init;
+
+    // Workbench je vždy aktivní (pouze jeden režim)
+    function showWorkbench() {
+        document.getElementById('workbench-section').style.display = '';
+        document.getElementById('btn-workbench').classList.add('active');
+    }
     </script>
 </body>
 </html>
