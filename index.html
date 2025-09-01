@@ -223,15 +223,6 @@
         }
 
         /* Informační panely v rozích */
-        #language-info {
-            position: absolute;
-            bottom: 30px;
-            right: 10px;
-            color: #888;
-            font-size: 12px;
-            text-align: right;
-        }
-
         #creator-info {
             position: absolute;
             bottom: 10px;
@@ -412,13 +403,6 @@
         <div id="main-menu" style="display: none;">
             <div class="menu-title" id="game-title">OPRAVÁŘ PC 1.0</div>
             <div class="menu-section">
-                <h3 id="lang-label-menu">Jazyk</h3>
-                <div id="lang-menu">
-                    <span class="menu-item" data-lang="cs">Čeština</span>
-                    <span class="menu-item" data-lang="en">English</span>
-                </div>
-            </div>
-            <div class="menu-section">
                 <h3 id="difficulty-label-menu">Obtížnost</h3>
                 <div id="difficulty-menu">
                     <span class="menu-item" data-difficulty="easy">Snadná</span>
@@ -427,8 +411,8 @@
                 </div>
             </div>
             <div class="menu-section">
-                <span class="menu-item" id="start-button">NOVÁ HRA</span>
                 <span class="menu-item" id="load-button" style="display: none;">POKRAČOVAT</span>
+                <span class="menu-item" id="start-button">NOVÁ HRA</span>
             </div>
         </div>
         
@@ -516,11 +500,6 @@
     
     <div id="notification"></div>
     
-    <div id="language-info">
-        <span id="lang-label">Jazyk</span>: <span id="current-lang">cs</span><br>
-        <span id="change-lang-label">Změnit jazyk: SET_LANG</span> <span id="lang-list">[en|cs]</span>
-    </div>
-    
     <div id="creator-info">
         Vytvořil MinecraftPolicieCz
     </div>
@@ -535,7 +514,6 @@
         const inventoryMenu = document.getElementById('inventory-menu');
         const startButton = document.getElementById('start-button');
         const loadButton = document.getElementById('load-button');
-        const langMenu = document.getElementById('lang-menu');
         const difficultyMenu = document.getElementById('difficulty-menu');
         const shopTitle = document.getElementById('shop-title');
         const shopDescription = document.getElementById('shop-description');
@@ -548,15 +526,11 @@
         const tasksTitle = document.getElementById('tasks-title');
         const tasksList = document.getElementById('tasks-list');
         const exitTasksButton = document.getElementById('exit-tasks-button');
-        const langLabel = document.getElementById('lang-label');
-        const currentLangSpan = document.getElementById('current-lang');
-        const changeLangLabel = document.getElementById('change-lang-label');
         const creatorInfoDiv = document.getElementById('creator-info');
         const tasksButton = document.getElementById('tasks-button');
         const shopButton = document.getElementById('shop-button');
         const inventoryButton = document.getElementById('inventory-button');
         const returnToMenuButton = document.getElementById('return-to-menu-button');
-        const langMenuLabel = document.getElementById('lang-label-menu');
         const difficultyMenuLabel = document.getElementById('difficulty-label-menu');
         const notificationDiv = document.getElementById('notification');
 
@@ -583,7 +557,6 @@
         
         // Nové prvky pro restart
         const restartScreen = document.getElementById('restart-screen');
-        const restartButton = document.getElementById('restart-button');
         const shutdownScreen = document.getElementById('shutdown-screen');
 
         const backgroundMusic = document.getElementById('background-music');
@@ -607,12 +580,12 @@
                 newJob: "Nový úkol: {name}\n----------------------------------\nPopis problému: {message}",
                 shopWelcome: "Vítejte v obchodě. Nakupujte zde potřebné součástky.\nVaše peněženka: ${money}$",
                 shopItem: "{item} ({price}$)",
-                buyCommand: "BUY",
-                sellCommand: "SELL",
+                buyCommand: "KOUPIT",
+                sellCommand: "PRODAT",
                 exitShopCommand: "Zpět na pracovní plochu",
                 inventoryTitle: "Inventář",
                 inventoryDescription: "Zde se nachází vaše součástky, které můžete prodat.<br>Vaše peněženka: ${money}$",
-                restarting: "REBOOTING...",
+                restarting: "RESTARTUJI...",
                 restartDone: "Restart dokončen. Zvolte novou akci.",
                 notEnoughMoney: "Nedostatek peněz nebo neplatná položka.",
                 noItemToSell: "Tuto položku nemáte.",
@@ -621,8 +594,6 @@
                 jobDone: "Úkol {name} dokončen! Cena součástky: {cost}$.\nOdměna: {pay}$.\nCelkový zisk: {profit}$.\nCelkem peněz: {money}$.",
                 sold: "Prodáno: {item}. Zůstatek: {money}$.",
                 purchased: "Zakoupeno: {item}. Zůstatek: {money}$.",
-                languageInfoLabel: "Jazyk",
-                changeLangLabel: "Změnit jazyk: SET_LANG",
                 creatorCredit: "Vytvořil MinecraftPolicieCz",
                 difficultyLabels: {
                     label: "Obtížnost",
@@ -632,7 +603,7 @@
                 },
                 problems: {
                     "VIRUS_INFESTATION": {
-                        name: "VIRUS_INFESTATION",
+                        name: "Zavirování systému",
                         message: "Systém je infikován virem! Musíte spustit antivirus.<br><b><span style='color: red;'>Zadejte: 'SCAN_VIRUS'</span></b>",
                         solution: "SCAN_VIRUS",
                         tool: "antivirus",
@@ -640,7 +611,7 @@
                         successRate: 0.85 
                     },
                     "BAD_RAM_MODULE": {
-                        name: "BAD_RAM_MODULE",
+                        name: "Chybný RAM modul",
                         message: "Počítač hlásí chybu paměti. Použijte nástroj pro diagnostiku.<br><b><span style='color: red;'>Zadejte: 'TEST_RAM'</span></b>",
                         solution: "TEST_RAM",
                         tool: "ram_tester",
@@ -648,7 +619,7 @@
                         successRate: 1.0 
                     },
                     "NETWORK_ADAPTER_FAILURE": {
-                        name: "NETWORK_ADAPTER_FAILURE",
+                        name: "Selhání síťového adaptéru",
                         message: "Síťový adaptér nefunguje. Zkuste ho resetovat.<br><b><span style='color: red;'>Zadejte: 'RESET_NETWORK'</span></b>",
                         solution: "RESET_NETWORK",
                         tool: "network_adapter",
@@ -656,7 +627,7 @@
                         successRate: 1.0 
                     },
                     "SSD_FAILURE": {
-                        name: "SSD_FAILURE",
+                        name: "Selhání SSD disku",
                         message: "Zákazník hlásí chybu na SSD. Je potřeba ho vyměnit.<br><b><span style='color: red;'>Zadejte: 'REPLACE_SSD'</span></b>",
                         solution: "REPLACE_SSD",
                         tool: "ssd",
@@ -664,7 +635,7 @@
                         successRate: 1.0 
                     },
                     "MOTHERBOARD_FAILURE": {
-                        name: "MOTHERBOARD_FAILURE",
+                        name: "Selhání základní desky",
                         message: "Základní deska nefunguje. Musíte ji vyměnit.<br><b><span style='color: red;'>Zadejte: 'REPLACE_MOTHERBOARD'</span></b>",
                         solution: "REPLACE_MOTHERBOARD",
                         tool: "motherboard",
@@ -672,7 +643,7 @@
                         successRate: 1.0 
                     },
                     "THERMAL_PASTE_DRY": {
-                        name: "THERMAL_PASTE_DRY",
+                        name: "Vyschlá teplovodivá pasta",
                         message: "PC se přehřívá, je potřeba vyměnit teplovodivou pastu.<br><b><span style='color: red;'>Zadejte: 'REPLACE_PASTE'</span></b>",
                         solution: "REPLACE_PASTE",
                         tool: "thermal_paste",
@@ -680,7 +651,7 @@
                         successRate: 0.95
                     },
                     "FAN_BROKEN": {
-                        name: "FAN_BROKEN",
+                        name: "Rozbitý ventilátor",
                         message: "Ventilátor se netočí a vydává podivné zvuky.<br><b><span style='color: red;'>Zadejte: 'REPLACE_FAN'</span></b>",
                         solution: "REPLACE_FAN",
                         tool: "case_fan",
@@ -688,7 +659,7 @@
                         successRate: 1.0
                     },
                     "CPU_OVERHEATING": {
-                        name: "CPU_OVERHEATING",
+                        name: "Přehřívání CPU",
                         message: "Procesor se přehřívá, potřebuje lepší chlazení.<br><b><span style='color: red;'>Zadejte: 'REPLACE_COOLER'</span></b>",
                         solution: "REPLACE_COOLER",
                         tool: "cpu_cooler",
@@ -696,7 +667,7 @@
                         successRate: 0.9
                     },
                     "POWER_SUPPLY_FAIL": {
-                        name: "POWER_SUPPLY_FAIL",
+                        name: "Selhání zdroje",
                         message: "Počítač se nezapne. Zdroj je nejspíš vadný.<br><b><span style='color: red;'>Zadejte: 'REPLACE_PSU'</span></b>",
                         solution: "REPLACE_PSU",
                         tool: "psu",
@@ -704,7 +675,7 @@
                         successRate: 1.0
                     },
                     "SOUND_CARD_BROKEN": {
-                        name: "SOUND_CARD_BROKEN",
+                        name: "Rozbitá zvuková karta",
                         message: "Nefunguje zvuk. Zvuková karta je vadná.<br><b><span style='color: red;'>Zadejte: 'REPLACE_SOUNDCARD'</span></b>",
                         solution: "REPLACE_SOUNDCARD",
                         tool: "sound_card",
@@ -712,7 +683,7 @@
                         successRate: 1.0
                     },
                     "BIOS_CORRUPTION": {
-                        name: "BIOS_CORRUPTION",
+                        name: "Poškozený BIOS",
                         message: "BIOS je poškozený, PC se nespustí. Přehrajte nový BIOS.<br><b><span style='color: red;'>Zadejte: 'FLASH_BIOS'</span></b>",
                         solution: "FLASH_BIOS",
                         tool: "usb_stick",
@@ -720,7 +691,7 @@
                         successRate: 0.7
                     },
                     "VGA_CABLE_FAULT": {
-                        name: "VGA_CABLE_FAULT",
+                        name: "Chybný VGA kabel",
                         message: "Monitor nemá signál. Vyměňte kabel.<br><b><span style='color: red;'>Zadejte: 'REPLACE_VGA'</span></b>",
                         solution: "REPLACE_VGA",
                         tool: "vga_cable",
@@ -728,7 +699,7 @@
                         successRate: 1.0
                     },
                     "DUSTY_PC": {
-                        name: "DUSTY_PC",
+                        name: "Zaprášený počítač",
                         message: "Počítač je silně zanesený prachem, čistota je na prvním místě.<br><b><span style='color: red;'>Zadejte: 'DUST_CLEAN'</span></b>",
                         solution: "DUST_CLEAN",
                         tool: "air_compressor",
@@ -736,7 +707,7 @@
                         successRate: 1.0
                     },
                     "WEBCAM_DRIVER_ISSUE": {
-                        name: "WEBCAM_DRIVER_ISSUE",
+                        name: "Nefunkční webkamera",
                         message: "Webkamera nefunguje, je potřeba ji vyměnit.<br><b><span style='color: red;'>Zadejte: 'REPLACE_WEBCAM'</span></b>",
                         solution: "REPLACE_WEBCAM",
                         tool: "webcam",
@@ -744,7 +715,7 @@
                         successRate: 1.0
                     },
                     "KEYBOARD_FAILURE": {
-                        name: "KEYBOARD_FAILURE",
+                        name: "Nefunkční klávesnice",
                         message: "Klávesnice nereaguje. Vyměňte ji.<br><b><span style='color: red;'>Zadejte: 'REPLACE_KEYBOARD'</span></b>",
                         solution: "REPLACE_KEYBOARD",
                         tool: "keyboard",
@@ -754,7 +725,7 @@
                 },
                 sideTasks: {
                     "DATA_RECOVERY": {
-                        name: "DATA_RECOVERY",
+                        name: "Obnova dat",
                         message: "Zákazník smazal důležité soubory. Obnovte je.<br><b><span style='color: red;'>Zadejte: 'RECOVER_FILES'</span></b>",
                         solution: "RECOVER_FILES",
                         pay: 15,
@@ -762,7 +733,7 @@
                         successRate: 1.0 
                     },
                     "CLEAN_UP": {
-                        name: "CLEAN_UP",
+                        name: "Vyčištění systému",
                         message: "Vyčistěte dočasné soubory, abyste urychlili systém.<br><b><span style='color: red;'>Zadejte: 'CLEAN_UP'</span></b>",
                         solution: "CLEAN_UP",
                         pay: 10,
@@ -770,7 +741,7 @@
                         loadingTime: 10000 
                     },
                     "SYSTEM_UPDATE": {
-                        name: "SYSTEM_UPDATE",
+                        name: "Aktualizace systému",
                         message: "Systém potřebuje aktualizovat.<br><b><span style='color: red;'>Zadejte: 'SYSTEM_UPDATE'</span></b>",
                         solution: "SYSTEM_UPDATE",
                         pay: 20,
@@ -778,7 +749,7 @@
                         loadingTime: 10000
                     },
                     "DRIVERS_INSTALL": {
-                        name: "DRIVERS_INSTALL",
+                        name: "Instalace ovladačů",
                         message: "Nainstalujte chybějící ovladače pro správnou funkci.<br><b><span style='color: red;'>Zadejte: 'DRIVERS_INSTALL'</span></b>",
                         solution: "DRIVERS_INSTALL",
                         pay: 25,
@@ -786,7 +757,7 @@
                         loadingTime: 10000
                     },
                     "HARD_DRIVE_DEFRAG": {
-                        name: "HARD_DRIVE_DEFRAG",
+                        name: "Defragmentace disku",
                         message: "Defragmentujte pevný disk pro zvýšení rychlosti.<br><b><span style='color: red;'>Zadejte: 'DEFRAG_HDD'</span></b>",
                         solution: "DEFRAG_HDD",
                         pay: 15,
@@ -794,7 +765,7 @@
                         loadingTime: 10000
                     },
                     "REGISTRY_CLEAN": {
-                        name: "REGISTRY_CLEAN",
+                        name: "Čištění registrů",
                         message: "Vyčistěte registr pro zlepšení výkonu.<br><b><span style='color: red;'>Zadejte: 'CLEAN_REG'</span></b>",
                         solution: "CLEAN_REG",
                         pay: 12,
@@ -802,7 +773,7 @@
                         successRate: 0.95
                     },
                     "STARTUP_OPTIMIZATION": {
-                        name: "STARTUP_OPTIMIZATION",
+                        name: "Optimalizace spouštění",
                         message: "Počítač se spouští příliš pomalu. Optimalizujte spouštěcí programy.<br><b><span style='color: red;'>Zadejte: 'OPTIMIZE_STARTUP'</span></b>",
                         solution: "OPTIMIZE_STARTUP",
                         pay: 18,
@@ -810,7 +781,7 @@
                         successRate: 1.0
                     },
                     "FULL_DIAGNOSTICS": {
-                        name: "FULL_DIAGNOSTICS",
+                        name: "Kompletní diagnostika",
                         message: "Proveďte kompletní diagnostiku systému.<br><b><span style='color: red;'>Zadejte: 'RUN_DIAG'</span></b>",
                         solution: "RUN_DIAG",
                         pay: 22,
@@ -818,7 +789,7 @@
                         successRate: 1.0
                     },
                     "DISK_HEALTH_CHECK": {
-                        name: "DISK_HEALTH_CHECK",
+                        name: "Kontrola stavu disku",
                         message: "Zkontrolujte stav pevného disku.<br><b><span style='color: red;'>Zadejte: 'CHECK_DISK'</span></b>",
                         solution: "CHECK_DISK",
                         pay: 14,
@@ -826,7 +797,7 @@
                         successRate: 1.0
                     },
                     "PERMISSIONS_REPAIR": {
-                        name: "PERMISSIONS_REPAIR",
+                        name: "Oprava oprávnění",
                         message: "Opravte poškozená oprávnění souborů.<br><b><span style='color: red;'>Zadejte: 'REPAIR_PERMS'</span></b>",
                         solution: "REPAIR_PERMS",
                         pay: 17,
@@ -834,7 +805,7 @@
                         successRate: 0.9
                     },
                     "FIREWALL_ENABLE": {
-                        name: "FIREWALL_ENABLE",
+                        name: "Zapnutí firewallu",
                         message: "Povolte firewall pro zvýšení bezpečnosti.<br><b><span style='color: red;'>Zadejte: 'ENABLE_FW'</span></b>",
                         solution: "ENABLE_FW",
                         pay: 13,
@@ -842,7 +813,7 @@
                         successRate: 1.0
                     },
                     "GRAPHICS_UPDATE": {
-                        name: "GRAPHICS_UPDATE",
+                        name: "Aktualizace grafiky",
                         message: "Aktualizujte grafické ovladače.<br><b><span style='color: red;'>Zadejte: 'UPDATE_GRAPHICS'</span></b>",
                         solution: "UPDATE_GRAPHICS",
                         pay: 19,
@@ -850,7 +821,7 @@
                         successRate: 1.0
                     },
                     "SYSTEM_FILES_REPAIR": {
-                        name: "SYSTEM_FILES_REPAIR",
+                        name: "Oprava systémových souborů",
                         message: "Opravte poškozené systémové soubory.<br><b><span style='color: red;'>Zadejte: 'REPAIR_SFC'</span></b>",
                         solution: "REPAIR_SFC",
                         pay: 28,
@@ -858,7 +829,7 @@
                         successRate: 0.8
                     },
                     "WINSOCK_RESET": {
-                        name: "WINSOCK_RESET",
+                        name: "Reset síťového protokolu",
                         message: "Resetujte nastavení síťového protokolu Winsock.<br><b><span style='color: red;'>Zadejte: 'RESET_WINSOCK'</span></b>",
                         solution: "RESET_WINSOCK",
                         pay: 16,
@@ -866,7 +837,7 @@
                         successRate: 1.0
                     },
                     "CREATE_RESTORE_POINT": {
-                        name: "CREATE_RESTORE_POINT",
+                        name: "Vytvoření bodu obnovy",
                         message: "Vytvořte bod obnovení systému.<br><b><span style='color: red;'>Zadejte: 'CREATE_RP'</span></b>",
                         solution: "CREATE_RP",
                         pay: 20,
@@ -914,333 +885,7 @@
                 taskSelected: "Úkol '{name}' byl vybrán. Zadejte správný příkaz pro jeho splnění, nebo vyberte jiný.",
                 notEnoughTool: "Pro tento úkol nemáte potřebnou součástku: {tool}. Kupte si ji v obchodě a zkuste to znovu.",
                 shutdown: "SHUTDOWN",
-                startup: "STARTING PC...",
-                welcomeScreen: "Vítejte!",
-                enterCommand: "Zadejte příkaz:",
-                commandsList: "Dostupné příkazy: tasks, shop, save, shutdown",
-                sellTitle: "Prodat položky",
-                sellInfo: "{item} ({sellPrice}$)",
-                finalMessagePrompt: "Pro vypnutí PC napište SHUTDOWN",
-                taskCompletedMessage: "Úkol dokončen! PC je třeba restartovat."
-            },
-            en: {
-                gameTitle: "PC REPAIRMAN 1.0",
-                welcome: "Welcome to the PC repair simulator.\nYour money: ${money}$",
-                startCommand: "START GAME",
-                loadCommand: "LOAD GAME",
-                saveCommand: "SAVE GAME",
-                returnToMenuCommand: "RETURN TO MENU",
-                newJob: "New job: {name}\n----------------------------------\nProblem description: {message}",
-                shopWelcome: "Welcome to the shop. Buy the necessary components here.\nYour money: ${money}$",
-                shopItem: "{item} ({price}$)",
-                buyCommand: "BUY",
-                sellCommand: "SELL",
-                exitShopCommand: "Back to workspace",
-                inventoryTitle: "Inventory",
-                inventoryDescription: "Here are your components that you can sell.<br>Your money: ${money}$",
-                restarting: "REBOOTING...",
-                restartDone: "Restart complete. Choose a new action.",
-                notEnoughMoney: "Not enough money or invalid item.",
-                noItemToSell: "You don't have this item.",
-                invalidTool: "You don't have the necessary tool for this task. Try to buy it in the shop.",
-                invalidCommand: "Invalid command. Try another one or use the buttons.",
-                jobDone: "Job {name} completed! Component cost: {cost}$.\nYou earn {pay}$.\nTotal profit: {profit}$.\nTotal money: {money}$.",
-                sold: "Sold: {item}. Balance: {money}$.",
-                purchased: "Purchased: {item}. Balance: {money}$.",
-                languageInfoLabel: "Language",
-                changeLangLabel: "Change language: SET_LANG",
-                creatorCredit: "Created by MinecraftPolicieCz",
-                difficultyLabels: {
-                    label: "Difficulty",
-                    easy: "Easy",
-                    medium: "Medium",
-                    hard: "Hard"
-                },
-                problems: {
-                    "VIRUS_INFESTATION": {
-                        name: "VIRUS_INFESTATION",
-                        message: "System is infected with a virus! You must run the antivirus.<br><b><span style='color: red;'>Enter: 'SCAN_VIRUS'</span></b>",
-                        solution: "SCAN_VIRUS",
-                        tool: "antivirus",
-                        loadingTime: 10000,
-                        successRate: 0.85
-                    },
-                    "BAD_RAM_MODULE": {
-                        name: "BAD_RAM_MODULE",
-                        message: "The computer reports a memory error. Use a diagnostic tool.<br><b><span style='color: red;'>Enter: 'TEST_RAM'</span></b>",
-                        solution: "TEST_RAM",
-                        tool: "ram_tester",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "NETWORK_ADAPTER_FAILURE": {
-                        name: "NETWORK_ADAPTER_FAILURE",
-                        message: "Network adapter is not working. Try to reset it.<br><b><span style='color: red;'>Enter: 'RESET_NETWORK'</span></b>",
-                        solution: "RESET_NETWORK",
-                        tool: "network_adapter",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "SSD_FAILURE": {
-                        name: "SSD_FAILURE",
-                        message: "The customer reports an SSD error. It needs to be replaced.<br><b><span style='color: red;'>Enter: 'REPLACE_SSD'</span></b>",
-                        solution: "REPLACE_SSD",
-                        tool: "ssd",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "MOTHERBOARD_FAILURE": {
-                        name: "MOTHERBOARD_FAILURE",
-                        message: "The motherboard is not working. You must replace it.<br><b><span style='color: red;'>Enter: 'REPLACE_MOTHERBOARD'</span></b>",
-                        solution: "REPLACE_MOTHERBOARD",
-                        tool: "motherboard",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "THERMAL_PASTE_DRY": {
-                        name: "THERMAL_PASTE_DRY",
-                        message: "PC is overheating, you need to replace the thermal paste.<br><b><span style='color: red;'>Enter: 'REPLACE_PASTE'</span></b>",
-                        solution: "REPLACE_PASTE",
-                        tool: "thermal_paste",
-                        loadingTime: 12000,
-                        successRate: 0.95
-                    },
-                    "FAN_BROKEN": {
-                        name: "FAN_BROKEN",
-                        message: "The fan is not spinning and makes strange noises.<br><b><span style='color: red;'>Enter: 'REPLACE_FAN'</span></b>",
-                        solution: "REPLACE_FAN",
-                        tool: "case_fan",
-                        loadingTime: 8000,
-                        successRate: 1.0
-                    },
-                    "CPU_OVERHEATING": {
-                        name: "CPU_OVERHEATING",
-                        message: "The CPU is overheating, it needs better cooling.<br><b><span style='color: red;'>Enter: 'REPLACE_COOLER'</span></b>",
-                        solution: "REPLACE_COOLER",
-                        tool: "cpu_cooler",
-                        loadingTime: 15000,
-                        successRate: 0.9
-                    },
-                    "POWER_SUPPLY_FAIL": {
-                        name: "POWER_SUPPLY_FAIL",
-                        message: "The computer does not turn on. The power supply is probably faulty.<br><b><span style='color: red;'>Enter: 'REPLACE_PSU'</span></b>",
-                        solution: "REPLACE_PSU",
-                        tool: "psu",
-                        loadingTime: 20000,
-                        successRate: 1.0
-                    },
-                    "SOUND_CARD_BROKEN": {
-                        name: "SOUND_CARD_BROKEN",
-                        message: "Sound is not working. The sound card is faulty.<br><b><span style='color: red;'>Enter: 'REPLACE_SOUNDCARD'</span></b>",
-                        solution: "REPLACE_SOUNDCARD",
-                        tool: "sound_card",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "BIOS_CORRUPTION": {
-                        name: "BIOS_CORRUPTION",
-                        message: "The BIOS is corrupted, the PC won't boot. Flash a new BIOS.<br><b><span style='color: red;'>Enter: 'FLASH_BIOS'</span></b>",
-                        solution: "FLASH_BIOS",
-                        tool: "usb_stick",
-                        loadingTime: 18000,
-                        successRate: 0.7
-                    },
-                    "VGA_CABLE_FAULT": {
-                        name: "VGA_CABLE_FAULT",
-                        message: "The monitor has no signal. Replace the cable.<br><b><span style='color: red;'>Enter: 'REPLACE_VGA'</span></b>",
-                        solution: "REPLACE_VGA",
-                        tool: "vga_cable",
-                        loadingTime: 5000,
-                        successRate: 1.0
-                    },
-                    "DUSTY_PC": {
-                        name: "DUSTY_PC",
-                        message: "The computer is heavily covered in dust, cleanliness comes first.<br><b><span style='color: red;'>Enter: 'DUST_CLEAN'</span></b>",
-                        solution: "DUST_CLEAN",
-                        tool: "air_compressor",
-                        loadingTime: 9000,
-                        successRate: 1.0
-                    },
-                    "WEBCAM_DRIVER_ISSUE": {
-                        name: "WEBCAM_DRIVER_ISSUE",
-                        message: "The webcam is not working, it needs to be replaced.<br><b><span style='color: red;'>Enter: 'REPLACE_WEBCAM'</span></b>",
-                        solution: "REPLACE_WEBCAM",
-                        tool: "webcam",
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "KEYBOARD_FAILURE": {
-                        name: "KEYBOARD_FAILURE",
-                        message: "The keyboard is not responding. Replace it.<br><b><span style='color: red;'>Enter: 'REPLACE_KEYBOARD'</span></b>",
-                        solution: "REPLACE_KEYBOARD",
-                        tool: "keyboard",
-                        loadingTime: 7000,
-                        successRate: 1.0
-                    }
-                },
-                sideTasks: {
-                    "DATA_RECOVERY": {
-                        name: "DATA_RECOVERY",
-                        message: "Customer deleted important files. Recover them.<br><b><span style='color: red;'>Enter: 'RECOVER_FILES'</span></b>",
-                        solution: "RECOVER_FILES",
-                        pay: 15,
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "CLEAN_UP": {
-                        name: "CLEAN_UP",
-                        message: "Clean up temporary files to speed up the system.<br><b><span style='color: red;'>Enter: 'CLEAN_UP'</span></b>",
-                        solution: "CLEAN_UP",
-                        pay: 10,
-                        successRate: 0.85,
-                        loadingTime: 10000
-                    },
-                    "SYSTEM_UPDATE": {
-                        name: "SYSTEM_UPDATE",
-                        message: "The system needs to be updated.<br><b><span style='color: red;'>Enter: 'SYSTEM_UPDATE'</span></b>",
-                        solution: "SYSTEM_UPDATE",
-                        pay: 20,
-                        successRate: 1.0,
-                        loadingTime: 10000
-                    },
-                    "DRIVERS_INSTALL": {
-                        name: "DRIVERS_INSTALL",
-                        message: "Install missing drivers for proper function.<br><b><span style='color: red;'>Enter: 'DRIVERS_INSTALL'</span></b>",
-                        solution: "DRIVERS_INSTALL",
-                        pay: 25,
-                        successRate: 1.0,
-                        loadingTime: 10000
-                    },
-                    "HARD_DRIVE_DEFRAG": {
-                        name: "HARD_DRIVE_DEFRAG",
-                        message: "Defragment the hard drive to increase speed.<br><b><span style='color: red;'>Enter: 'DEFRAG_HDD'</span></b>",
-                        solution: "DEFRAG_HDD",
-                        pay: 15,
-                        successRate: 1.0,
-                        loadingTime: 10000
-                    },
-                    "REGISTRY_CLEAN": {
-                        name: "REGISTRY_CLEAN",
-                        message: "Clean the registry to improve performance.<br><b><span style='color: red;'>Enter: 'CLEAN_REG'</span></b>",
-                        solution: "CLEAN_REG",
-                        pay: 12,
-                        loadingTime: 9000,
-                        successRate: 0.95
-                    },
-                    "STARTUP_OPTIMIZATION": {
-                        name: "STARTUP_OPTIMIZATION",
-                        message: "The computer starts too slowly. Optimize startup programs.<br><b><span style='color: red;'>Enter: 'OPTIMIZE_STARTUP'</span></b>",
-                        solution: "OPTIMIZE_STARTUP",
-                        pay: 18,
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "FULL_DIAGNOSTICS": {
-                        name: "FULL_DIAGNOSTICS",
-                        message: "Run a full system diagnostic.<br><b><span style='color: red;'>Enter: 'RUN_DIAG'</span></b>",
-                        solution: "RUN_DIAG",
-                        pay: 22,
-                        loadingTime: 15000,
-                        successRate: 1.0
-                    },
-                    "DISK_HEALTH_CHECK": {
-                        name: "DISK_HEALTH_CHECK",
-                        message: "Check the hard drive's health.<br><b><span style='color: red;'>Enter: 'CHECK_DISK'</span></b>",
-                        solution: "CHECK_DISK",
-                        pay: 14,
-                        loadingTime: 8000,
-                        successRate: 1.0
-                    },
-                    "PERMISSIONS_REPAIR": {
-                        name: "PERMISSIONS_REPAIR",
-                        message: "Repair corrupted file permissions.<br><b><span style='color: red;'>Enter: 'REPAIR_PERMS'</span></b>",
-                        solution: "REPAIR_PERMS",
-                        pay: 17,
-                        loadingTime: 11000,
-                        successRate: 0.9
-                    },
-                    "FIREWALL_ENABLE": {
-                        name: "FIREWALL_ENABLE",
-                        message: "Enable the firewall to increase security.<br><b><span style='color: red;'>Enter: 'ENABLE_FW'</span></b>",
-                        solution: "ENABLE_FW",
-                        pay: 13,
-                        loadingTime: 6000,
-                        successRate: 1.0
-                    },
-                    "GRAPHICS_UPDATE": {
-                        name: "GRAPHICS_UPDATE",
-                        message: "Update the graphics drivers.<br><b><span style='color: red;'>Enter: 'UPDATE_GRAPHICS'</span></b>",
-                        solution: "UPDATE_GRAPHICS",
-                        pay: 19,
-                        loadingTime: 10000,
-                        successRate: 1.0
-                    },
-                    "SYSTEM_FILES_REPAIR": {
-                        name: "SYSTEM_FILES_REPAIR",
-                        message: "Repair corrupted system files.<br><b><span style='color: red;'>Enter: 'REPAIR_SFC'</span></b>",
-                        solution: "REPAIR_SFC",
-                        pay: 28,
-                        loadingTime: 18000,
-                        successRate: 0.8
-                    },
-                    "WINSOCK_RESET": {
-                        name: "WINSOCK_RESET",
-                        message: "Reset the Winsock network protocol settings.<br><b><span style='color: red;'>Enter: 'RESET_WINSOCK'</span></b>",
-                        solution: "RESET_WINSOCK",
-                        pay: 16,
-                        loadingTime: 7000,
-                        successRate: 1.0
-                    },
-                    "CREATE_RESTORE_POINT": {
-                        name: "CREATE_RESTORE_POINT",
-                        message: "Create a system restore point.<br><b><span style='color: red;'>Zadejte: 'CREATE_RP'</span></b>",
-                        solution: "CREATE_RP",
-                        pay: 20,
-                        loadingTime: 12000,
-                        successRate: 1.0
-                    }
-                },
-                shopItems: {
-                    'antivirus': 'antivirus',
-                    'ram_tester': 'diagnostika RAM',
-                    'network_adapter': 'síťový adaptér',
-                    'cpu': 'procesor',
-                    'gpu': 'grafická karta',
-                    'ram': 'RAM',
-                    'ssd': 'SSD',
-                    'motherboard': 'základní deska',
-                    'software_pack': 'balík software',
-                    'thermal_paste': 'teplovodivá pasta',
-                    'case_fan': 'ventilátor skříně',
-                    'cpu_cooler': 'chladič CPU',
-                    'psu': 'zdroj (PSU)',
-                    'sound_card': 'zvuková karta',
-                    'usb_stick': 'USB disk',
-                    'vga_cable': 'VGA kabel',
-                    'air_compressor': 'vzduchový kompresor',
-                    'webcam': 'webkamera',
-                    'keyboard': 'klávesnice'
-                },
-                repairMode: "OPRAVNÝ REŽIM: Zadejte příkaz do konzole.",
-                taskInfo: "{name} (Odměna: {pay}$)",
-                noTasks: "Momentálně nejsou k dispozici žádné úkoly.",
-                tasksHeader: "Seznam úkolů",
-                newTasksAvailable: "Přibyly nové úkoly! Klikněte na 'SEZNAM ÚKOLŮ', abyste si je prohlédli.",
-                selectTaskCommand: "SELECT_TASK",
-                tasksCommand: "SEZNAM ÚKOLŮ",
-                shopCommand: "OBCHOD",
-                inventoryCommand: "INVENTÁŘ",
-                gameSaved: "Hra uložena.",
-                gameLoaded: "Hra načtena. Vítejte zpět!",
-                noSavedGame: "Žádná uložená hra nebyla nalezena.",
-                confirmNewGame: "Opravdu chcete začít novou hru? Stávající uložená hra bude přepsána.",
-                loading: "Načítám...",
-                success: "Úkol úspěšně dokončen!",
-                failure: "Úkol selhal. Prosím, zkuste to znovu.",
-                taskSelected: "Úkol '{name}' byl vybrán. Zadejte správný příkaz pro jeho splnění, nebo vyberte jiný.",
-                notEnoughTool: "Pro tento úkol nemáte potřebnou součástku: {tool}. Kupte si ji v obchodě a zkuste to znovu.",
-                shutdown: "SHUTDOWN",
-                startup: "STARTING PC...",
+                startup: "ZAPÍNÁM PC...",
                 welcomeScreen: "Vítejte!",
                 enterCommand: "Zadejte příkaz:",
                 commandsList: "Dostupné příkazy: tasks, shop, save, shutdown",
@@ -1298,7 +943,7 @@
         };
 
         function getTranslation(key, placeholders = {}) {
-            let translation = translations[gameState.language][key] || key;
+            let translation = translations.cs[key] || key;
             for (const placeholder in placeholders) {
                 translation = translation.replace(`{${placeholder}}`, placeholders[placeholder]);
             }
@@ -1383,8 +1028,8 @@
         
         // Funkce pro generování nových úkolů
         function generateNewTasks() {
-            const problems = translations[gameState.language].problems;
-            const sideTasks = translations[gameState.language].sideTasks;
+            const problems = getTranslation('problems');
+            const sideTasks = getTranslation('sideTasks');
             const allTasksKeys = [...Object.keys(problems), ...Object.keys(sideTasks)];
             
             // Náhodně vybereme jeden typ úkolu
@@ -1421,7 +1066,7 @@
             }
             gameState.tasks.push(newTask);
             showNotification(getTranslation('newTasksAvailable'));
-            saveGame(); // AUTOSAVE
+        saveGame(false); // AUTOSAVE
         }
 
         // Funkce, která připraví okno úkolu pro zobrazení
@@ -1448,11 +1093,15 @@
             resetGameScreen();
             taskWindow.style.display = 'flex';
             
-            // Skryjeme vše, co je v task-window a zobrazíme startup screen
+            // Důkladně skryjeme všechny části okna úkolu před zobrazením úvodní obrazovky
             taskWindowHeader.style.display = 'none';
             taskConsole.style.display = 'none';
             taskInputField.style.display = 'none';
             taskPromptSpan.style.display = 'none';
+            introVideo.style.display = 'none';
+            loadingOverlay.style.display = 'none';
+            restartScreen.style.display = 'none';
+            shutdownScreen.style.display = 'none';
             startupScreen.style.display = 'flex';
             
             currentTask = task;
@@ -1494,7 +1143,7 @@
         function startTask(task) {
             if (task.tool && (!gameState.inventory[task.tool] || gameState.inventory[task.tool] <= 0)) {
                 showMenu('workspace');
-                showNotification(getTranslation('notEnoughTool', { tool: translations[gameState.language].shopItems[task.tool] }));
+                showNotification(getTranslation('notEnoughTool', { tool: getTranslation('shopItems')[task.tool] }));
                 return;
             }
             
@@ -1535,6 +1184,14 @@
             taskPromptSpan.style.display = 'none';
             loadingOverlay.style.display = 'none';
             
+            // Restore the HTML of the restart screen to its original state
+            restartScreen.innerHTML = `
+                <p class="large-text">PC vyžaduje restart.</p>
+                <button id="restart-button" class="menu-item-button">Restartovat PC</button>
+            `;
+            // Find the newly created button and attach the event listener
+            document.getElementById('restart-button').addEventListener('click', handleRestartClick);
+
             taskWindowContent.classList.add('center-container');
             taskWindow.style.backgroundColor = '#000000';
             taskWindow.style.color = '#FFFFFF';
@@ -1548,7 +1205,6 @@
                     <p class="large-text">Restartuji PC...</p>
                 </div>
             `;
-            
             setTimeout(() => {
                 const task = currentTask;
                 const message = getTranslation('jobDone', {
@@ -1558,15 +1214,17 @@
                     profit: Math.round(task.pay - task.componentCost),
                     money: Math.round(gameState.money),
                 });
-                
                 restartScreen.innerHTML = '';
                 introVideo.style.display = 'block';
-                introVideo.currentTime = 0; // Začneme video od začátku
-                introVideo.play();
-                
-                introVideo.onended = () => {
+                introVideo.currentTime = 0;
+                // Odstranit starý listener, přidat nový
+                introVideo.onended = null;
+                introVideo.removeEventListener('ended', handleVideoEnded);
+                introVideo.addEventListener('ended', function onRestartVideoEnd() {
+                    introVideo.removeEventListener('ended', onRestartVideoEnd);
                     showFinalMessageConsole(message);
-                };
+                });
+                introVideo.play();
             }, 5000);
         }
         
@@ -1594,14 +1252,13 @@
             consoleHistory = [];
             appendToConsole(`<span style="color: green;">${message}</span>`);
             appendToConsole(getTranslation('finalMessagePrompt'));
-            
             taskInputField.value = '';
             taskInputField.focus();
-
             taskInputField.onkeydown = (event) => {
                 if (event.key === 'Enter') {
                     const command = taskInputField.value.toUpperCase().trim();
                     if (command === 'SHUTDOWN') {
+                        currentTask = null;
                         showShutdownScreen();
                     } else {
                         appendToConsole(`<span class="console-input">C:\\> ${command}</span>`);
@@ -1630,7 +1287,7 @@
             // Odstranění dokončeného úkolu
             gameState.tasks = gameState.tasks.filter(t => t.id !== task.id);
             
-            saveGame(); // AUTOSAVE
+        saveGame(false); // AUTOSAVE
             showRestartScreen();
         }
 
@@ -1666,9 +1323,9 @@
         
         function updateShopMenu() {
             shopItemsList.innerHTML = '';
-            shopDescription.textContent = getTranslation('shopWelcome', { money: Math.round(gameState.money) });
+            shopDescription.innerHTML = getTranslation('shopWelcome', { money: Math.round(gameState.money) });
             
-            const shopItems = translations[gameState.language].shopItems;
+            const shopItems = getTranslation('shopItems');
             
             for (const itemKey in prices) {
                 const itemDiv = document.createElement('div');
@@ -1681,7 +1338,7 @@
         
         function updateInventoryMenu() {
             inventoryItemsList.innerHTML = '';
-            inventoryDescription.textContent = getTranslation('inventoryDescription', { money: Math.round(gameState.money) });
+            inventoryDescription.innerHTML = getTranslation('inventoryDescription', { money: Math.round(gameState.money) });
             
             let hasSellableItems = false;
             for (const itemKey in gameState.inventory) {
@@ -1690,7 +1347,7 @@
                     const sellPrice = prices[itemKey] / 2;
                     const itemDiv = document.createElement('div');
                     itemDiv.classList.add('menu-item');
-                    itemDiv.textContent = `${translations[gameState.language].shopItems[itemKey]} (${sellPrice}$ x${gameState.inventory[itemKey]})`;
+                    itemDiv.textContent = `${getTranslation('shopItems')[itemKey]} (${sellPrice}$ x${gameState.inventory[itemKey]})`;
                     itemDiv.onclick = () => sellItem(itemKey);
                     inventoryItemsList.appendChild(itemDiv);
                 }
@@ -1711,9 +1368,9 @@
                     gameState.inventory[item] = 0;
                 }
                 gameState.inventory[item]++;
-                showNotification(getTranslation('purchased', { item: translations[gameState.language].shopItems[item], money: Math.round(gameState.money) }));
+                showNotification(getTranslation('purchased', { item: getTranslation('shopItems')[item], money: Math.round(gameState.money) }));
                 updateShopMenu();
-                saveGame(); // AUTOSAVE
+            saveGame(false); // AUTOSAVE
             } else {
                 showNotification(getTranslation('notEnoughMoney'));
             }
@@ -1724,9 +1381,9 @@
                 const sellPrice = prices[item] / 2;
                 gameState.money += sellPrice;
                 gameState.inventory[item]--;
-                showNotification(getTranslation('sold', { item: translations[gameState.language].shopItems[item], money: Math.round(gameState.money) }));
+                showNotification(getTranslation('sold', { item: getTranslation('shopItems')[item], money: Math.round(gameState.money) }));
                 updateInventoryMenu();
-                saveGame(); // AUTOSAVE
+                saveGame(false); // AUTOSAVE
             } else {
                 showNotification(getTranslation('noItemToSell'));
             }
@@ -1773,17 +1430,6 @@
             }, interval);
         }
         
-        function updateLanguageInfoPanel() {
-            currentLangSpan.textContent = gameState.language;
-        }
-
-        function setLanguage(lang) {
-            gameState.language = lang;
-            updateMenu();
-            updateLanguageInfoPanel();
-            showNotification(`Jazyk změněn na: ${lang}`);
-        }
-
         function setDifficulty(difficulty) {
             gameState.difficulty = difficulty;
             updateMenu();
@@ -1791,45 +1437,41 @@
         }
         
         function updateMenu() {
-            langMenu.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active-item');
-                if (item.dataset.lang === gameState.language) {
-                    item.classList.add('active-item');
-                }
-            });
             difficultyMenu.querySelectorAll('.menu-item').forEach(item => {
                 item.classList.remove('active-item');
                 if (item.dataset.difficulty === gameState.difficulty) {
                     item.classList.add('active-item');
                 }
             });
-            langMenuLabel.textContent = translations[gameState.language].languageInfoLabel;
-            difficultyMenuLabel.textContent = translations[gameState.language].difficultyLabels.label || 'Obtížnost';
-            startButton.textContent = translations[gameState.language].startCommand;
-            loadButton.textContent = translations[gameState.language].loadCommand;
-            tasksButton.textContent = translations[gameState.language].tasksCommand;
-            shopButton.textContent = translations[gameState.language].shopCommand;
-            inventoryButton.textContent = translations[gameState.language].inventoryCommand;
-            returnToMenuButton.textContent = translations[gameState.language].returnToMenuCommand;
-            creatorInfoDiv.textContent = translations[gameState.language].creatorCredit;
-            shopTitle.textContent = translations[gameState.language].shopCommand;
-            inventoryTitle.textContent = translations[gameState.language].inventoryTitle;
-            tasksTitle.textContent = translations[gameState.language].tasksHeader;
-            exitShopButton.textContent = translations[gameState.language].exitShopCommand;
-            exitInventoryButton.textContent = translations[gameState.language].exitShopCommand;
-            exitTasksButton.textContent = translations[gameState.language].exitShopCommand;
-            document.title = translations[gameState.language].gameTitle;
+            difficultyMenuLabel.textContent = getTranslation('difficultyLabels').label;
+            startButton.textContent = getTranslation('startCommand');
+            loadButton.textContent = getTranslation('loadCommand');
+            tasksButton.textContent = getTranslation('tasksCommand');
+            shopButton.textContent = getTranslation('shopCommand');
+            inventoryButton.textContent = getTranslation('inventoryCommand');
+            returnToMenuButton.textContent = getTranslation('returnToMenuCommand');
+            creatorInfoDiv.textContent = getTranslation('creatorCredit');
+            shopTitle.textContent = getTranslation('shopCommand');
+            inventoryTitle.textContent = getTranslation('inventoryTitle');
+            tasksTitle.textContent = getTranslation('tasksHeader');
+            exitShopButton.textContent = getTranslation('exitShopCommand');
+            exitInventoryButton.textContent = getTranslation('exitShopCommand');
+            exitTasksButton.textContent = getTranslation('exitShopCommand');
+            document.title = getTranslation('gameTitle');
         }
 
-        function saveGame() {
+        function saveGame(showNotif = true) {
             localStorage.setItem('opravarec_pc_save', JSON.stringify(gameState));
-            showNotification(getTranslation('gameSaved'));
+            if (showNotif) {
+                showNotification(getTranslation('gameSaved'));
+            }
         }
 
         function loadGame() {
             const savedState = localStorage.getItem('opravarec_pc_save');
             if (savedState) {
                 gameState = JSON.parse(savedState);
+                startGameClockAndTasks(); // Spustíme generování úkolů
                 showMenu('workspace');
                 showNotification(getTranslation('gameLoaded'));
                 playMusic();
@@ -1855,44 +1497,47 @@
             backgroundMusic.currentTime = 0;
         }
 
+        // Funkce pro spuštění časovače generování úkolů
+        function startGameClockAndTasks() {
+            if (taskGenerationInterval) {
+                clearInterval(taskGenerationInterval);
+            }
+            // Spustí se pravidelné generování úkolů s náhodným intervalem mezi 10 a 30 vteřinami
+            taskGenerationInterval = setInterval(() => {
+                // Generujeme úkoly, pouze pokud jich je méně než 5
+                if (gameState.tasks.length < 5) {
+                    generateNewTasks();
+                }
+            }, Math.random() * (30000 - 10000) + 10000);
+        }
+
         function startGame() {
             gameState = {
                 money: 100,
                 inventory: {},
                 tasks: [],
                 difficulty: gameState.difficulty,
-                language: gameState.language,
+                language: 'cs',
                 repairedPcs: 0,
             };
             // Vygeneruje se první úkol ihned po startu
             generateNewTasks();
             
-            // Spustí se pravidelné generování úkolů s náhodným intervalem mezi 10 a 30 vteřinami
-            if (taskGenerationInterval) {
-                clearInterval(taskGenerationInterval);
-            }
-            taskGenerationInterval = setInterval(() => {
-                generateNewTasks();
-            }, Math.random() * (30000 - 10000) + 10000);
+            startGameClockAndTasks(); // Spustíme generování úkolů
 
             showMenu('workspace');
             playMusic();
         }
 
         // Event listenery pro tlačítka v menu a v průběhu hry
-        langMenu.addEventListener('click', (event) => {
-            if (event.target.classList.contains('menu-item')) {
-                setLanguage(event.target.dataset.lang);
-            }
-        });
-
         difficultyMenu.addEventListener('click', (event) => {
             if (event.target.classList.contains('menu-item')) {
                 setDifficulty(event.target.dataset.difficulty);
             }
         });
 
-        startButton.addEventListener('click', () => {
+        // Po změně pořadí tlačítek v HTML je potřeba znovu navázat eventy
+        document.getElementById('start-button').addEventListener('click', () => {
             if (localStorage.getItem('opravarec_pc_save')) {
                 if (confirm(getTranslation('confirmNewGame'))) {
                     startGame();
@@ -1901,8 +1546,7 @@
                 startGame();
             }
         });
-
-        loadButton.addEventListener('click', loadGame);
+        document.getElementById('load-button').addEventListener('click', loadGame);
         tasksButton.addEventListener('click', () => showMenu('tasks'));
         shopButton.addEventListener('click', () => showMenu('shop'));
         inventoryButton.addEventListener('click', () => showMenu('inventory'));
@@ -1910,12 +1554,10 @@
         exitShopButton.addEventListener('click', () => showMenu('workspace'));
         exitInventoryButton.addEventListener('click', () => showMenu('workspace'));
         exitTasksButton.addEventListener('click', () => showMenu('workspace'));
-        restartButton.addEventListener('click', handleRestartClick);
         
         // Inicializace
         resetGameScreen();
         updateMenu();
-        updateLanguageInfoPanel();
         checkSavedGame();
         showMenu('main');
     </script>
